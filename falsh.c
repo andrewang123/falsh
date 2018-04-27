@@ -65,8 +65,7 @@ int main(int argc, char * argv[])
 			char *homeDirectPath = getenv("HOME");
 			char *otherPath = buffer;
 			printf("%s\n", homeDirectPath);
-			printf("%s\n", otherPath);
-			
+			printf("%s\n", otherPath);	
 			// chkdir returns a 0 if it successfully changed paths and 1 if it failed to change
 			// takes in the specific path that you want to change to
 			int ret = chdir(homeDirectPath);
