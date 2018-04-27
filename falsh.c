@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+void reprompt();
 void printUserDescriptions();
 int main(int argc, char * argv[])
 {
@@ -48,15 +49,12 @@ int main(int argc, char * argv[])
 		{
 			exit(0);
 		}
-		//if(check == EOF) 
-		//{
-		//      	break; // when the user hits CTRL+d
-		//}
+		
 		printf("%s", buffer);
 		// falsh -h	
-		if (strcmp(buffer, "-h"))
+		if (strcmp(buffer, "help"))
 		{
-			printf("IT WORKS");
+			printUserDescriptions();
 		}
 	}
 
@@ -64,7 +62,9 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
-
+// Lists all of the commands with short user-friendly descriptions
+// Parameters: N/A
+// Returns: N/A
 void printUserDescriptions() 
 {
 	printf("####################################\n");
