@@ -31,8 +31,7 @@ int main(int argc, char * argv[])
 		printf("command not found.\n");
 		free(buffer); // deallocate memory
 		exit(0); // exits the program
-	}
-		
+	}		
 	while(1) // Invoking falsh
 	{
 		// read user input 
@@ -52,7 +51,6 @@ int main(int argc, char * argv[])
 			printf("command not found.\n");
 		}
 	}
-
 	free(buffer); // deallocate memory
 	return 0;
 }
@@ -69,9 +67,6 @@ void reprompt(char *buffer, size_t size)
 	
 	//check = 
 	getline(&buffer, &size, stdin); // get entire line
-		
-
-
 }
 
 // Lists all of the commands with short user-friendly descriptions
@@ -89,7 +84,5 @@ void printUserDescriptions()
 	printf("If no arguments are specified than changes to home directory.\n");
 	printf("If a directory is provided than it will change to that directory.\n");
 	printf("Usage: cd [dir]\n");
-
-	
 
 }
