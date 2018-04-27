@@ -6,13 +6,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 void reprompt(char *buffer, size_t size);
 void printUserDescriptions();
 int main(int argc, char * argv[])
 {
+	//char buffer[255]; // stores the user input
 	char *buffer; // stores the user input
-	int check; // flag to check for EOF
+
+	//int check; // flag to check for EOF
+	
 	size_t size = 255; // size of input
 	// allocate memory, we have to cast it as a char pointer because if we 
 	// dont than the compiler has warnings. malloc is a function that creates 
@@ -35,7 +39,7 @@ int main(int argc, char * argv[])
 	}		
 	while(1) // Invoking falsh
 	{
-		reprompt(buffer, size);	
+		reprompt(buffer, size);
 		if (strcmp(buffer, "exit\n") == 0) // exit the program
 		{
 			exit(0);
@@ -54,6 +58,25 @@ int main(int argc, char * argv[])
     			else
       				printf("Current directory: %s\n", cwd);
   			
+		} else if(buffer[0] == 'c' && buffer[1] == 'd') // change directory
+		{
+			// getenv returns the value of the path of the designated location
+			// parameter that is passed in is the name of the location
+			char *homeDirectPath = getenv("HOME");
+			char *otherPath = buffer;
+			printf("%s\n", homeDirectPath);
+			printf("%s\n", otherPath);
+			
+			// chkdir returns a 0 if it successfully changed paths and 1 if it failed to change
+			// takes in the specific path that you want to change to
+			int ret = chdir(homeDirectPath);
+			if(ret == 0)
+			{
+				printf("IT WORKS\n");
+			} else 
+			{
+				printf("IT FAILED\n");
+			}
 		} else
 		{
 			printf("command not found.\n");
