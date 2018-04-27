@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void reprompt();
+void reprompt(char *buffer, size_t size);
 void printUserDescriptions();
 int main(int argc, char * argv[])
 {
@@ -20,7 +20,7 @@ int main(int argc, char * argv[])
 	// check if they are doing falsh -h
 	if (argc == 2)
 	{ 
-		if (strcmp(argv[1], "falsh -h")) 
+		if (strcmp(argv[1], "-h") == 0) 
 		{
 			printUserDescriptions();
 			free(buffer); // deallocate memory	
@@ -39,27 +39,39 @@ int main(int argc, char * argv[])
 		// check for commands
 		// else if input is program in path
 		// error
-	
-		// buffer is the address of the first characer position 
-		// size is the address of the cariable that holds the size of the input buffer
-		// stdin is the type of the FILE * (usually stdin or the file)	
-		check = getline(&buffer, &size, stdin); // get entire line
-		
-		if (strcmp(buffer, "exit")) // exit the program
+		reprompt(buffer, size);	
+
+		if (strcmp(buffer, "exit\n") == 0) // exit the program
 		{
 			exit(0);
-		}
-		
-		printf("%s", buffer);
-		// falsh -h	
-		if (strcmp(buffer, "help"))
+		} else if (strcmp(buffer, "help\n") == 0)
 		{
 			printUserDescriptions();
+		} else
+		{
+			printf("command not found.\n");
 		}
 	}
 
 	free(buffer); // deallocate memory
 	return 0;
+}
+
+// Reprompts the user each time
+// Parameters: N/A
+// Returns: N/A
+void reprompt(char *buffer, size_t size) 
+{
+	printf("falsh > ");
+	// buffer is the address of the first characer position 
+	// size is the address of the cariable that holds the size of the input buffer
+	// stdin is the type of the FILE * (usually stdin or the file)	
+	
+	//check = 
+	getline(&buffer, &size, stdin); // get entire line
+		
+
+
 }
 
 // Lists all of the commands with short user-friendly descriptions
@@ -76,7 +88,7 @@ void printUserDescriptions()
 	printf("cd - changes the directory.\n Usage: cd [dir] \n");
 	printf("If no arguments are specified than changes to home directory.\n");
 	printf("If a directory is provided than it will change to that directory.\n");
-	printf("Usage: cd [dir]");
+	printf("Usage: cd [dir]\n");
 
 	
 
