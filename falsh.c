@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 void reprompt(char *buffer, size_t size);
 void printUserDescriptions();
@@ -34,18 +35,25 @@ int main(int argc, char * argv[])
 	}		
 	while(1) // Invoking falsh
 	{
-		// read user input 
-		// check for commands
-		// else if input is program in path
-		// error
 		reprompt(buffer, size);	
-
 		if (strcmp(buffer, "exit\n") == 0) // exit the program
 		{
 			exit(0);
 		} else if (strcmp(buffer, "help\n") == 0)
 		{
 			printUserDescriptions();
+		} else if (strcmp(buffer, "pwd\n") == 0)
+		{
+			char cwd[256]; // create an array to hold the current working directory
+			// first parameter is the name of the buffer that will be used to store the current working directory
+			// second parameter is the number of characters in the buffer area
+			// the getcwd fuction returns a pointer to the buffer if successful otherwise it returns null if fail
+			// getcwd determines the path of the working directory and stores it in an array aka the buffer
+	  		if (getcwd(cwd, sizeof(cwd)) == NULL)
+     				perror("getcwd() error");
+    			else
+      				printf("Current directory: %s\n", cwd);
+  			
 		} else
 		{
 			printf("command not found.\n");
@@ -65,7 +73,6 @@ void reprompt(char *buffer, size_t size)
 	// size is the address of the cariable that holds the size of the input buffer
 	// stdin is the type of the FILE * (usually stdin or the file)	
 	
-	//check = 
 	getline(&buffer, &size, stdin); // get entire line
 }
 
@@ -84,5 +91,7 @@ void printUserDescriptions()
 	printf("If no arguments are specified than changes to home directory.\n");
 	printf("If a directory is provided than it will change to that directory.\n");
 	printf("Usage: cd [dir]\n");
+
+	printf("####################################\n");
 
 }
