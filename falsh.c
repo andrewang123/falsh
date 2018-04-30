@@ -7,16 +7,15 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
-
+int changeDir(char* buffer);
+void getPWD();
 void reprompt(char *buffer, size_t size);
 void printUserDescriptions();
 int main(int argc, char * argv[])
 {
 	//char buffer[255]; // stores the user input
 	char *buffer; // stores the user input
-
-	//int check; // flag to check for EOF
-	
+	//int check; // flag to check for EOF	
 	size_t size = 255; // size of input
 	// allocate memory, we have to cast it as a char pointer because if we 
 	// dont than the compiler has warnings. malloc is a function that creates 
@@ -48,34 +47,19 @@ int main(int argc, char * argv[])
 			printUserDescriptions();
 		} else if (strcmp(buffer, "pwd\n") == 0)
 		{
-			char cwd[256]; // create an array to hold the current working directory
-			// first parameter is the name of the buffer that will be used to store the current working directory
-			// second parameter is the number of characters in the buffer area
-			// the getcwd fuction returns a pointer to the buffer if successful otherwise it returns null if fail
-			// getcwd determines the path of the working directory and stores it in an array aka the buffer
-	  		if (getcwd(cwd, sizeof(cwd)) == NULL)
-     				perror("getcwd() error");
-    			else
-      				printf("Current directory: %s\n", cwd);
-  			
+			getPWD();
+			printf("\n");
 		} else if(buffer[0] == 'c' && buffer[1] == 'd') // change directory
 		{
-			// getenv returns the value of the path of the designated location
-			// parameter that is passed in is the name of the location
-			char *homeDirectPath = getenv("HOME");
-			char *otherPath = buffer;
-			printf("%s\n", homeDirectPath);
-			printf("%s\n", otherPath);	
-			// chkdir returns a 0 if it successfully changed paths and 1 if it failed to change
-			// takes in the specific path that you want to change to
-			int ret = chdir(homeDirectPath);
-			if(ret == 0)
+			int success = changeDir(buffer);	
+			if(success == 0)
 			{
 				printf("IT WORKS\n");
 			} else 
 			{
 				printf("IT FAILED\n");
 			}
+	
 		} else
 		{
 			printf("command not found.\n");
@@ -85,12 +69,55 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
+
+// Changes the path of the user
+// Parameters: buffer is the line the user typed in
+// Returns 1 if succeed, 0 if failed
+int changeDir(char* buffer)
+{
+	if (strcmp(buffer, "cd\n") == 0)
+	{
+		// getenv returns the value of the path of the designated location
+		// parameter that is passed in is the name of the location
+		char *homeDirectPath = getenv("HOME");
+		char *otherPath = buffer;
+		printf("%s\n", homeDirectPath);
+		printf("%s\n", otherPath);
+	
+		// chkdir returns a 0 if it successfully changed paths and 1 if it failed to change
+		// takes in the specific path that you want to change to
+		int ret = chdir(homeDirectPath);
+		//int ret = chdir(otherPath);
+	} else 
+	{
+		printf("changed to other directory");
+	}
+}
+
+// Prints the current directory
+// Parameters: N/A
+// Returns: N/A
+void getPWD() 
+{
+	char cwd[256]; // create an array to hold the current working directory
+	// first parameter is the name of the buffer that will be used to store the current working directory
+	// second parameter is the number of characters in the buffer area
+	// the getcwd fuction returns a pointer to the buffer if successful otherwise it returns null if fail
+	// getcwd determines the path of the working directory and stores it in an array aka the buffer
+	if (getcwd(cwd, sizeof(cwd)) == NULL)
+     		perror("getcwd() error");
+    	else
+      		printf("%s > ", cwd);
+  		
+}
 // Reprompts the user each time
 // Parameters: N/A
 // Returns: N/A
 void reprompt(char *buffer, size_t size) 
 {
-	printf("falsh > ");
+
+	printf("falsh: ");
+	getPWD();
 	// buffer is the address of the first characer position 
 	// size is the address of the cariable that holds the size of the input buffer
 	// stdin is the type of the FILE * (usually stdin or the file)	
@@ -103,8 +130,8 @@ void reprompt(char *buffer, size_t size)
 // Returns: N/A
 void printUserDescriptions() 
 {
-	printf("####################################\n");
-	printf("        FAlcon baSH aka falsh       \n");
+	printf("########################################################################\n");
+	printf("	             FAlcon baSH aka falsh       \n");
 
 	printf("LIST OF COMMANDS:\n");
 	printf("exit - exits the program. \n Usage: exit\n\n");
@@ -114,6 +141,6 @@ void printUserDescriptions()
 	printf("If a directory is provided than it will change to that directory.\n");
 	printf("Usage: cd [dir]\n");
 
-	printf("####################################\n");
+	printf("########################################################################\n");
 
 }
