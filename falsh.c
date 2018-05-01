@@ -48,20 +48,15 @@ int main(int argc, char * argv[])
 		} else if (strcmp(buffer, "pwd\n") == 0)
 		{
 			char* cwd = getPWD();
-			printf("%s", cwd);
-			printf("\n");
-			free(cwd);
+			printf("%s\n", cwd);
+			free(cwd); // free up the dynamically created memory
 		} else if(buffer[0] == 'c' && buffer[1] == 'd') // change directory
-		{
-	//		int success = changeDir(buffer);	
-	//		if(success == 0)
-	//		{
-	//			//printf("IT WORKS\n");
-	//		} else 
-	//		{
-	//			//printf("IT FAILED\n");
-	//		}
-	
+		{	
+			int success = changeDir(buffer);	
+			if(success != 0) // if the given directory fails
+			{
+				printf("No such file or directory\n");
+			} 
 		} else
 		{
 			printf("command not found.\n");
@@ -83,31 +78,24 @@ int changeDir(char* buffer)
 		// getenv returns the value of the path of the designated location
 		// parameter that is passed in is the name of the location
 		char *homeDirectPath = getenv("HOME");
-		printf("%s\n", homeDirectPath);
-	
 		// chkdir returns a 0 if it successfully changed paths and 1 if it failed to change
 		// takes in the specific path that you want to change to
 		ret = chdir(homeDirectPath);
 	} else 
 	{
-		char finalPath[255]; // the entire path of the place the user wants to cd to
-		char* curPath = getPWD(); // + buffer;
-		strcpy(finalPath, curPath);
-		strcat(finalPath, "hellothere!");
-		printf("%s\n", finalPath);
+		char* finalPath;
+		finalPath = malloc(sizeof(char) * 255); // dynamically allocate space
+		// str copy copies the 2nd string into the first string
+		strcpy(finalPath, buffer + 3);
+		// strcspn takes in two strings and returns the number of character in the first parameter
+		// that is not in the second string (parameter)
+		// gets rid of the \n and replaces it with the null byte character
+		finalPath[strcspn(finalPath, "\n")] = '\0';		
 		// chkdir returns a 0 if it successfully changed paths and 1 if it failed to change
 		// takes in the specific path that you want to change to
-
 		ret = chdir(finalPath);
-		if (ret == 0)
-		{
-			printf("it works");
-		} else	
-		{
-			printf("falsh: cd: %s, No such file or directory\n", finalPath);
-		}
+		free(finalPath); // free the dynamically allocated memory of finalpath
 	}
-
 	return ret;
 }
 
@@ -122,28 +110,21 @@ char* getPWD()
 	// second parameter is the number of characters in the buffer area
 	// the getcwd fuction returns a pointer to the buffer if successful otherwise it returns null if fail
 	// getcwd determines the path of the working directory and stores it in an array aka the buffer
-	
 	if (getcwd(cwd, sizeof(char) * 255) == NULL)
      		perror("getcwd() error");
-    	//else
-      	//	printf("%s > ", cwd);
-
 	return cwd;
-  		
 }
+
 // Reprompts the user each time
 // Parameters: N/A
 // Returns: N/A
 void reprompt(char *buffer, size_t size) 
 {
-	
-	char* currentDirectory = getPWD();
+	char* currentDirectory = getPWD(); // gets the current directory
 	printf("falsh: %s > ", currentDirectory);
-	
 	// buffer is the address of the first characer position 
 	// size is the address of the cariable that holds the size of the input buffer
 	// stdin is the type of the FILE * (usually stdin or the file)	
-	
 	getline(&buffer, &size, stdin); // get entire line
 }
 
@@ -154,7 +135,6 @@ void printUserDescriptions()
 {
 	printf("########################################################################\n");
 	printf("	             FAlcon baSH aka falsh       \n");
-
 	printf("LIST OF COMMANDS:\n");
 	printf("exit - exits the program. \n Usage: exit\n\n");
 	printf("pwd - print the current working directory.\n Usage: pwd\n\n");
@@ -162,7 +142,8 @@ void printUserDescriptions()
 	printf("If no arguments are specified than changes to home directory.\n");
 	printf("If a directory is provided than it will change to that directory.\n");
 	printf("Usage: cd [dir]\n");
-
-	printf("########################################################################\n");
+	printf("setpath - overwrites the path with whatever arguements the user enters.\n");
+	printf("Path should only contain /bin\n");
+	printf("#######################################################################\n");
 
 }
