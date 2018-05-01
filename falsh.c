@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+
 int setPath(char* buffer);
 int changeDir(char* buffer);
 char* getPWD();
@@ -71,8 +72,8 @@ int main(int argc, char * argv[])
 		} else if (setPathStr != NULL && strchr(buffer, ' ') != NULL) // if it is setpath with a space
 		{
 			if (strcmp(setPathStr, "setpath") == 0)	
-			{	
-				printf("it works!!!");
+			{
+				int success = setPath(buffer);		
 			}
 		} else 
 		{
@@ -88,7 +89,44 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
-
+// Sets the path of the executables
+// Parameters: the entire line of user input
+// Returns: 0 if succeed, 1 if fail to set path
+int setPath(char* buffer)
+{
+	int success = 1;
+	char totalPath[255];
+	char* oldEnv = strdup(getenv("PATH")); // make a copy of your path
+	printf("Current Path: %s\n", oldEnv);
+	
+	//string seperated by :
+	char* token = strtok(buffer, " "); 
+	token = strtok(NULL, " ");
+	strcpy(totalPath, token);
+	while(token) { // add it to the string
+		token = strtok(NULL, " ");			
+		if(token)
+		{
+			strcat(totalPath, ":");
+			strcat(totalPath, token);
+		} else
+			break;
+	}
+	
+	success = setenv("PATH", totalPath, 1);
+	printf("Final Path =%s\n", totalPath);
+	
+	// system("./yo/hello")
+	if (success == 0) 
+	{
+		//printf("it worked");
+	} else 
+	{
+		//printf("it failed");
+	}
+	
+	return success;
+}
 // Changes the path of the user
 // Parameters: buffer is the line the user typed in
 // Returns 0 if succeed, 1 if failed
