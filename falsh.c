@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+int setPath(char* buffer);
 int changeDir(char* buffer);
 char* getPWD();
 void reprompt(char *buffer, size_t size);
@@ -38,7 +39,17 @@ int main(int argc, char * argv[])
 	}		
 	while(1) // Invoking falsh
 	{
+		
 		reprompt(buffer, size);
+		char *setPathStr;
+		if (strlen(buffer) > 7 && strchr(buffer, ' ') != NULL)
+		{
+			setPathStr = (char*)malloc(sizeof(char) * 255); // allocate dynamic memory	
+			// Searches for the first occurance of the 2nd parameter	
+			char* startOfSecond = strchr(buffer, ' '); // first instance of a space
+			size_t lengthOfFirst = startOfSecond - buffer; // the index of the first occurance of space
+			strncpy(setPathStr, buffer, lengthOfFirst); // should just be setpath
+		}
 		if (strcmp(buffer, "exit\n") == 0) // exit the program
 		{
 			exit(0);
@@ -57,10 +68,21 @@ int main(int argc, char * argv[])
 			{
 				printf("No such file or directory\n");
 			} 
-		} else
+		} else if (setPathStr != NULL && strchr(buffer, ' ') != NULL) // if it is setpath with a space
 		{
-			printf("command not found.\n");
+			if (strcmp(setPathStr, "setpath") == 0)	
+			{	
+				printf("it works!!!");
+			}
+		} else 
+		{
+			if (strcmp(buffer, "setpath\n") == 0) // if the user just uses setpath
+				printf("setpath must be accompanied by at least one directory\n");	
+			else
+				printf("command not found.\n");
 		}
+		free(setPathStr); // deallocate memory
+
 	}
 	free(buffer); // deallocate memory
 	return 0;
