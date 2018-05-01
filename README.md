@@ -1,4 +1,4 @@
-Hell aka falsh
+# The Falcon Shell aka falsh
 Parameters in [] are optional, parameters in <> are required and the | (pipe) means "or". 
 
 What is falsh?  
@@ -21,5 +21,3 @@ Redirection
 
 
 \* Note: Any errors will not end the session, instead it will generate a "command not found" error.
-
-
