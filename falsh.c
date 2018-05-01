@@ -7,7 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
-
+void printIntro();
 int setPath(char* buffer);
 int changeDir(char* buffer);
 char* getPWD();
@@ -15,6 +15,7 @@ void reprompt(char *buffer, size_t size);
 void printUserDescriptions();
 int main(int argc, char * argv[])
 {
+	printIntro();
 	//char buffer[255]; // stores the user input
 	char *buffer; // stores the user input
 	//int check; // flag to check for EOF	
@@ -206,4 +207,15 @@ void printUserDescriptions()
 	printf("Path should only contain /bin\n");
 	printf("#######################################################################\n");
 
+}
+
+// Prints the introduction to let the user know that they have entered falsh
+// Parameters: N/A
+// Returns: N/A
+void printIntro()
+{
+	printf("****************************************************\n");
+	printf("	        WELCOME TO FALSH\n");
+	printf("****************************************************\n");
+	
 }
