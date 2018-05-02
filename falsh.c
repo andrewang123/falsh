@@ -7,6 +7,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 int contains(char* buffer, int ascii);
 void printIntro();
 int setPath(char* buffer);
@@ -75,7 +78,9 @@ int main(int argc, char * argv[])
 		} else if(contains(buffer, '>') == 0) // go into redirection
 		{	
 			//int num = contains(buffer, '>');
-			printf("This contains a redirection: %s\n", buffer);
+			//printf("This contains a redirection: %s\n", buffer);
+		//	close(1); // close the output
+		
 		} else if (setPathStr != NULL && strchr(buffer, ' ') != NULL) // if it is setpath with a space
 		{
 			if (strcmp(setPathStr, "setpath") == 0)	
@@ -85,17 +90,44 @@ int main(int argc, char * argv[])
 		} else 
 		{
 			if (strcmp(buffer, "setpath\n") == 0) // if the user just uses setpath
-				printf("setpath must be accompanied by at least one directory\n");	
+				printf("Setpath must be accompanied by at least one directory.\n");	
 			else
 				printf("command not found.\n");
 		}
 		free(setPathStr); // deallocate memory
-
+		free(bufferCpy); // deallocate memory
 	}
 	free(buffer); // deallocate memory
 	return 0;
 }
 
+
+// Redirects to a file
+// Parameters:
+// Returns:
+int redirection(char* command, char* filename)
+{
+	if (filename == NULL)
+		return 1;
+	int fileDesc = open("filename.out", O_CREAT | O_TRUNC | O_WRONLY, 0640);
+			
+	int rc = fork();
+	if (rc == 0) // child
+	{
+		//exec("help");
+		dup2(fileDesc, STDOUT_FILENO);
+		close(fileDesc);
+		printf("done");
+	} else if (rc > 0) // parent
+	{
+		printf("parent\n");
+	} else // error
+	{
+		printf("Error Creating Process");
+	} 
+
+
+}
 // Checks if a string contains a specific char
 // Parameters: A string
 // Returns: 0 if true, 1 if false
