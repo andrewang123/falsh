@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+int contains(char* buffer, int ascii);
 void printIntro();
 int setPath(char* buffer);
 int changeDir(char* buffer);
@@ -44,13 +45,14 @@ int main(int argc, char * argv[])
 		
 		reprompt(buffer, size);
 		char *setPathStr;
-		if (strlen(buffer) > 7 && strchr(buffer, ' ') != NULL)
+		char *bufferCpy  = strdup(buffer);
+		if (strlen(bufferCpy) > 7 && strchr(bufferCpy, ' ') != NULL)
 		{
 			setPathStr = (char*)malloc(sizeof(char) * 255); // allocate dynamic memory	
 			// Searches for the first occurance of the 2nd parameter	
-			char* startOfSecond = strchr(buffer, ' '); // first instance of a space
-			size_t lengthOfFirst = startOfSecond - buffer; // the index of the first occurance of space
-			strncpy(setPathStr, buffer, lengthOfFirst); // should just be setpath
+			char* startOfSecond = strchr(bufferCpy, ' '); // first instance of a space
+			size_t lengthOfFirst = startOfSecond - bufferCpy; // the index of the first occurance of space
+			setPathStr = strndup(bufferCpy, lengthOfFirst);
 		}
 		if (strcmp(buffer, "exit\n") == 0) // exit the program
 		{
@@ -70,6 +72,10 @@ int main(int argc, char * argv[])
 			{
 				printf("No such file or directory\n");
 			} 
+		} else if(contains(buffer, '>') == 0) // go into redirection
+		{	
+			//int num = contains(buffer, '>');
+			printf("This contains a redirection: %s\n", buffer);
 		} else if (setPathStr != NULL && strchr(buffer, ' ') != NULL) // if it is setpath with a space
 		{
 			if (strcmp(setPathStr, "setpath") == 0)	
@@ -90,28 +96,49 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
+// Checks if a string contains a specific char
+// Parameters: A string
+// Returns: 0 if true, 1 if false
+int contains(char* buffer, int ascii)
+{
+	int success = 1;
+	for(int i = 0; i < strlen(buffer); i++)
+	{
+		if(buffer[i] == ascii)
+		{
+			success = 0;
+			return success;
+		}
+	}
+
+	return success;
+}
+
 // Sets the path of the executables
 // Parameters: the entire line of user input
 // Returns: 0 if succeed, 1 if fail to set path
 int setPath(char* buffer)
 {
-	int success = 1;
+	int success = 1; 
 	char totalPath[255];
+	// strdup duplicates the string, in this case it gets the current path an puts it into 
+	// oldEnv (after calling getenv)
+	// getenv searches for the environement string by the name and returns the value of the string
 	char* oldEnv = strdup(getenv("PATH")); // make a copy of your path
 	printf("Current Path: %s\n", oldEnv);
 	
-	//string seperated by :
-	char* token = strtok(buffer, " "); 
-	token = strtok(NULL, " ");
-	strcpy(totalPath, token);
+	// accounts for multiple directories being added
+	char* token = strtok(buffer, " "); // the setpath string, we should ignore that
+	token = strtok(NULL, " "); // get the first token
+	strcpy(totalPath, token); // add that token to the totalPath
 	while(token) { // add it to the string
-		token = strtok(NULL, " ");			
-		if(token)
+		token = strtok(NULL, " "); // keep iterating through to the next token
+		if(token) // if there is still a token to be found
 		{
-			strcat(totalPath, ":");
-			strcat(totalPath, token);
+			strcat(totalPath, ":"); // add a colon to seperate directories
+			strcat(totalPath, token); // add the next token to the totalPath
 		} else
-			break;
+			break; // there is no more tokens 
 	}
 	
 	success = setenv("PATH", totalPath, 1);
@@ -125,7 +152,7 @@ int setPath(char* buffer)
 	{
 		//printf("it failed");
 	}
-	
+	free(oldEnv); // free up memory created by strdup
 	return success;
 }
 // Changes the path of the user
