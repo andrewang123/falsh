@@ -94,7 +94,7 @@ int main(int argc, char * argv[])
 		{
 			if (strcmp(setPathStr, "setpath") == 0)	
 			{
-				int sucess = setPath(buffer);
+				int success = setPath(buffer);
 			}
 		} else 
 		{
@@ -117,11 +117,10 @@ int main(int argc, char * argv[])
 // Returns: 0 if successfully ran, otherwise returns false
 void runOtherCommands(char* buffer) 
 {
-	static int success = 1;
+	int success = 1;
 	char* pathOfCommand = strdup(getenv("PATH")); // make a copy of your path
 	pathOfCommand[strlen(pathOfCommand) - 1] = '\0';	
 	
-//	printf("%s\n", pathOfCommand);
 	//remove the \n and add the forward slash to the beginning of the command
 	char* command = (char*)malloc(sizeof(char) * 255);
 	strcpy(command, "/");
@@ -135,8 +134,7 @@ void runOtherCommands(char* buffer)
 		char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
 		strcpy(finalPathOfExec, token);
 		strcat(finalPathOfExec, command);
-		//printf("%s\n", finalPathOfExec);
-		
+		//printf("%s\n", finalPathOfExec);	
 		int rc = fork();
 		if (rc < 0)
 		{
@@ -149,7 +147,7 @@ void runOtherCommands(char* buffer)
 				exit(0);
 			} else 
 			{
-				success = 0;
+				success = 0;	
 			}
 		} else // parent 
 		{ 
@@ -218,8 +216,7 @@ int setPath(char* buffer)
 	// oldEnv (after calling getenv)
 	// getenv searches for the environement string by the name and returns the value of the string
 	char* oldEnv = strdup(getenv("PATH")); // make a copy of your path
-	printf("Current Path: %s\n", oldEnv);
-	
+	//printf("Current Path: %s\n", oldEnv);
 	// accounts for multiple directories being added
 	char* token = strtok(buffer, " "); // the setpath string, we should ignore that
 	token = strtok(NULL, " "); // get the first token
@@ -234,15 +231,7 @@ int setPath(char* buffer)
 			break; // there is no more tokens 
 	}
 	success = setenv("PATH", totalPath, 1);
-	printf("Final Path =%s\n", totalPath);
-	
-	if (success == 0) 
-	{
-		//printf("it worked");
-	} else 
-	{
-		//printf("it failed");
-	}
+	//printf("Final Path =%s\n", totalPath);
 	free(oldEnv); // free up memory created by strdup
 	return success;
 }
