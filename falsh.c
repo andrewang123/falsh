@@ -11,10 +11,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-int runOtherCommands(char* pathOfCommand, char* command);
+int runOtherCommands(char* command);
 int contains(char* buffer, int ascii);
 void printIntro();
-char* setPath(char* buffer);
+int setPath(char* buffer);
 int changeDir(char* buffer);
 char* getPWD();
 void reprompt(char *buffer, size_t size);
@@ -88,8 +88,7 @@ int main(int argc, char * argv[])
 		{
 			if (strcmp(setPathStr, "setpath") == 0)	
 			{
-				userPath =  malloc(sizeof(char) * 255);
-				userPath = setPath(buffer);
+				int sucess = setPath(buffer);
 				printf("The users path is: %s", userPath);
 			}
 		} else 
@@ -98,15 +97,14 @@ int main(int argc, char * argv[])
 				printf("Setpath must be accompanied by at least one directory.\n");	
 			else 
 			{
-				if(runOtherCommands(userPath, buffer) == 0)
+				if(runOtherCommands(buffer) == 0)
 				{
 					printf("buffer: %s", buffer);
 					//printf("Successfully ran other thing");
 
 				} else 
 				{
-					printf("command not found.\n");
-				
+					printf("command not found.\n");					
 				}
 			}
 		}
@@ -117,56 +115,50 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
-// Other commands running
-// Parameters:
+// Runs the other commands if it is in the path
+// Parameters: buffer, which is the command the user types in
 // Returns: 0 if successfully ran, otherwise returns false
-int runOtherCommands(char *pathOfCommand, char* buffer) 
+int runOtherCommands(char* buffer) 
 {
+	int success = 1;
+	char* pathOfCommand = strdup(getenv("PATH")); // make a copy of your path
+	pathOfCommand[strlen(pathOfCommand) - 1] = '\0';	
+	
+	//remove the \n and add the forward slash to the beginning of the command
 	char* command = (char*)malloc(sizeof(char) * 255);
 	strcpy(command, "/");
 	strcat(command, buffer);
 	command[strlen(command) - 1] = '\0';
-	// path of command /commands	
-	if(pathOfCommand == NULL)
+
+	// parse through the string 
+	char* token = strtok(pathOfCommand, ":");
+	while(token != NULL)
 	{
-		printf("they didnt put anthing\n");
-		printf("%s", command);
-		//use the default path
-	} else 
-	{
-		printf("parsing stuff\n");
-		// parse through the string 
-		char* token = strtok(pathOfCommand, ":");
-		while(token != NULL)
-		{
-			char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
-			strcpy(finalPathOfExec, token);
-			strcat(finalPathOfExec, command);
-			printf("%s\n", finalPathOfExec);
-			
-			int rc = fork();
-			if (rc < 0)
-			{
-	
-			} else if (rc == 0)
-			{
-		//		char* allArgs[] = {"/bin", NULL};
+		char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
+		strcpy(finalPathOfExec, token);
+		strcat(finalPathOfExec, command);
+		//printf("%s\n", finalPathOfExec);
 		
-				if(execl(finalPathOfExec, finalPathOfExec, NULL) == -1)
-				{ // cannot run it
-					exit(0);
-				}
-			} else { // parent
-				wait(NULL); // parent must wait for child process to finish
-
+		int rc = fork();
+		if (rc < 0)
+		{
+			printf("An error occurred during fork.\n");
+		} else if (rc == 0)
+		{
+			//char* allArgs[] = {"/bin", NULL};	
+			if(execl(finalPathOfExec, finalPathOfExec, NULL) == -1)
+			{ // cannot run it
+				exit(0);
+			} else 
+			{
+				success = 0;
+			}
+		} else { // parent
+			wait(NULL); // parent must wait for child process to finish
 		}	
-
-	 
-			token = strtok(NULL, ":");
+			token = strtok(NULL, ":"); // move onto the next directory
 		}
-	}
-
-	return 0;
+	return success;
 }
 
 // Redirects to a file
@@ -217,7 +209,7 @@ int contains(char* buffer, int ascii)
 // Sets the path of the executables
 // Parameters: the entire line of user input
 // Returns: a string containing all of the setpaths seperated by colons
-char* setPath(char* buffer)
+int setPath(char* buffer)
 {
 	int success = 1; 
 	char* totalPath;
@@ -252,8 +244,7 @@ char* setPath(char* buffer)
 		//printf("it failed");
 	}
 	free(oldEnv); // free up memory created by strdup
-	totalPath[strlen(totalPath) - 1] = '\0';	
-	return totalPath;
+	return success;
 }
 // Changes the path of the user
 // Parameters: buffer is the line the user typed in
