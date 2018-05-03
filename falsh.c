@@ -45,10 +45,10 @@ int main(int argc, char * argv[])
 		free(buffer); // deallocate memory
 		exit(0); // exits the program
 	}
-	int numOfDirAdded = 0;
+	char* userPath; // variable holding users path
 	while(1) // Invoking falsh
 	{
-		char* userPath = NULL; // variable holding users path
+		
 		reprompt(buffer, size);
 		char *setPathStr;
 		char *bufferCpy  = strdup(buffer);
@@ -110,8 +110,8 @@ int main(int argc, char * argv[])
 				}
 			}
 		}
-		free(setPathStr); // deallocate memory
-		free(bufferCpy); // deallocate memory
+//		free(setPathStr); // deallocate memory
+//		free(bufferCpy); // deallocate memory
 	}
 	free(buffer); // deallocate memory
 	return 0;
@@ -123,7 +123,9 @@ int main(int argc, char * argv[])
 int runOtherCommands(char *pathOfCommand, char* buffer) 
 {
 	char* command = (char*)malloc(sizeof(char) * 255);
-	strcpy(command, buffer);
+	strcpy(command, "/");
+	strcat(command, buffer);
+	command[strlen(command) - 1] = '\0';
 	// path of command /commands	
 	if(pathOfCommand == NULL)
 	{
@@ -132,25 +134,36 @@ int runOtherCommands(char *pathOfCommand, char* buffer)
 		//use the default path
 	} else 
 	{
+		printf("parsing stuff\n");
 		// parse through the string 
-		
-		int rc = fork();
-		if (rc < 0)
+		char* token = strtok(pathOfCommand, ":");
+		while(token != NULL)
 		{
+			char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
+			strcpy(finalPathOfExec, token);
+			strcat(finalPathOfExec, command);
+			printf("%s\n", finalPathOfExec);
+			
+			int rc = fork();
+			if (rc < 0)
+			{
 	
-		} else if (rc == 0)
-		{
-			char* allArgs[] = {"/bin", NULL};
+			} else if (rc == 0)
+			{
+		//		char* allArgs[] = {"/bin", NULL};
 		
-			if(execv(allArgs[0], allArgs) == -1)
-			{ // cannot run it
-				exit(0);
-			}
-		} else { // parent
-			wait(NULL); // parent must wait for child process to finish
+				if(execl(finalPathOfExec, finalPathOfExec, NULL) == -1)
+				{ // cannot run it
+					exit(0);
+				}
+			} else { // parent
+				wait(NULL); // parent must wait for child process to finish
 
 		}	
 
+	 
+			token = strtok(NULL, ":");
+		}
 	}
 
 	return 0;
@@ -239,6 +252,7 @@ char* setPath(char* buffer)
 		//printf("it failed");
 	}
 	free(oldEnv); // free up memory created by strdup
+	totalPath[strlen(totalPath) - 1] = '\0';	
 	return totalPath;
 }
 // Changes the path of the user
