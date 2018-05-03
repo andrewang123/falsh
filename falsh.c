@@ -2,6 +2,7 @@
 // Lab 3 - The Falcon Shell
 // Professor Dingler
 // The purpose of this lab is to create our own shell
+
 #include <sys/wait.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +12,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-int runOtherCommands(char* command);
+
+void runOtherCommands(char* command);
 int contains(char* buffer, int ascii);
 void printIntro();
 int setPath(char* buffer);
@@ -21,36 +23,39 @@ void reprompt(char *buffer, size_t size);
 void printUserDescriptions();
 int main(int argc, char * argv[])
 {
-	printIntro();
-	//char buffer[255]; // stores the user input
-	char *buffer; // stores the user input
-	//int check; // flag to check for EOF	
-	size_t size = 255; // size of input
-	// allocate memory, we have to cast it as a char pointer because if we 
-	// dont than the compiler has warnings. malloc is a function that creates 
-	// memory and parameter it takes is how big the space is to be		
-	buffer = (char *) malloc(size * sizeof(char)); 	
 	// check if they are doing falsh -h
 	if (argc == 2)
 	{ 
 		if (strcmp(argv[1], "-h") == 0) 
 		{
+			printIntro();
 			printUserDescriptions();
-			free(buffer); // deallocate memory	
 			exit(0); // exits the program
+		} else 
+		{
+			printf("Not a valid entrance into falsh shell");
+			exit(0); // exits the program			
 		}
 	} else if (argc > 2)
 	{
 		printf("command not found.\n");
-		free(buffer); // deallocate memory
 		exit(0); // exits the program
 	}
+
+	char *buffer; // stores the user input
+	size_t size = 255; // size of input
+	// allocate memory, we have to cast it as a char pointer because if we 
+	// dont than the compiler has warnings. malloc is a function that creates 
+	// memory and parameter it takes is how big the space is to be		
+	buffer = (char *) malloc(size * sizeof(char)); 	
+	printIntro();
 	char* userPath; // variable holding users path
 	while(1) // Invoking falsh
 	{
 		
 		reprompt(buffer, size);
 		char *setPathStr;
+		// make a deep copy of the buffer, it is like strcpy but dynamically allocated memory
 		char *bufferCpy  = strdup(buffer);
 		if (strlen(bufferCpy) > 7 && strchr(bufferCpy, ' ') != NULL)
 		{
@@ -62,6 +67,7 @@ int main(int argc, char * argv[])
 		}
 		if (strcmp(buffer, "exit\n") == 0) // exit the program
 		{
+			printf("Exiting falsh. . .\n");
 			exit(0);
 		} else if (strcmp(buffer, "help\n") == 0)
 		{
@@ -89,7 +95,6 @@ int main(int argc, char * argv[])
 			if (strcmp(setPathStr, "setpath") == 0)	
 			{
 				int sucess = setPath(buffer);
-				printf("The users path is: %s", userPath);
 			}
 		} else 
 		{
@@ -97,19 +102,11 @@ int main(int argc, char * argv[])
 				printf("Setpath must be accompanied by at least one directory.\n");	
 			else 
 			{
-				if(runOtherCommands(buffer) == 0)
-				{
-					printf("buffer: %s", buffer);
-					//printf("Successfully ran other thing");
-
-				} else 
-				{
-					printf("command not found.\n");					
-				}
+				runOtherCommands(buffer);
 			}
 		}
 //		free(setPathStr); // deallocate memory
-//		free(bufferCpy); // deallocate memory
+		free(bufferCpy); // deallocate memory
 	}
 	free(buffer); // deallocate memory
 	return 0;
@@ -118,12 +115,13 @@ int main(int argc, char * argv[])
 // Runs the other commands if it is in the path
 // Parameters: buffer, which is the command the user types in
 // Returns: 0 if successfully ran, otherwise returns false
-int runOtherCommands(char* buffer) 
+void runOtherCommands(char* buffer) 
 {
-	int success = 1;
+	static int success = 1;
 	char* pathOfCommand = strdup(getenv("PATH")); // make a copy of your path
 	pathOfCommand[strlen(pathOfCommand) - 1] = '\0';	
 	
+//	printf("%s\n", pathOfCommand);
 	//remove the \n and add the forward slash to the beginning of the command
 	char* command = (char*)malloc(sizeof(char) * 255);
 	strcpy(command, "/");
@@ -146,19 +144,21 @@ int runOtherCommands(char* buffer)
 		} else if (rc == 0)
 		{
 			//char* allArgs[] = {"/bin", NULL};	
-			if(execl(finalPathOfExec, finalPathOfExec, NULL) == -1)
-			{ // cannot run it
+			if(execl(finalPathOfExec, finalPathOfExec, NULL) == -1) // cannot run
+			{
 				exit(0);
 			} else 
 			{
 				success = 0;
 			}
-		} else { // parent
+		} else // parent 
+		{ 
 			wait(NULL); // parent must wait for child process to finish
 		}	
-			token = strtok(NULL, ":"); // move onto the next directory
-		}
-	return success;
+		token = strtok(NULL, ":"); // move onto the next directory
+	}
+	if(success == 1)
+		printf("command not found.\n");		
 }
 
 // Redirects to a file
