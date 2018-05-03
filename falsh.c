@@ -2,6 +2,7 @@
 // Lab 3 - The Falcon Shell
 // Professor Dingler
 // The purpose of this lab is to create our own shell
+#include <sys/wait.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,10 +11,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-int runOtherCommands(char* pathOfCommand);
+int runOtherCommands(char* pathOfCommand, char* command);
 int contains(char* buffer, int ascii);
 void printIntro();
-int setPath(char* buffer);
+char* setPath(char* buffer);
 int changeDir(char* buffer);
 char* getPWD();
 void reprompt(char *buffer, size_t size);
@@ -43,10 +44,11 @@ int main(int argc, char * argv[])
 		printf("command not found.\n");
 		free(buffer); // deallocate memory
 		exit(0); // exits the program
-	}		
+	}
+	int numOfDirAdded = 0;
 	while(1) // Invoking falsh
 	{
-		
+		char* userPath = NULL; // variable holding users path
 		reprompt(buffer, size);
 		char *setPathStr;
 		char *bufferCpy  = strdup(buffer);
@@ -86,7 +88,9 @@ int main(int argc, char * argv[])
 		{
 			if (strcmp(setPathStr, "setpath") == 0)	
 			{
-				int success = setPath(buffer);		
+				userPath =  malloc(sizeof(char) * 255);
+				userPath = setPath(buffer);
+				printf("The users path is: %s", userPath);
 			}
 		} else 
 		{
@@ -94,7 +98,7 @@ int main(int argc, char * argv[])
 				printf("Setpath must be accompanied by at least one directory.\n");	
 			else 
 			{
-				if(runOtherCommands("TEMP") == 0)
+				if(runOtherCommands(userPath, buffer) == 0)
 				{
 					printf("Successfully ran other thing");
 
@@ -115,24 +119,36 @@ int main(int argc, char * argv[])
 // Other commands running
 // Parameters:
 // Returns: 0 if successfully ran, otherwise returns false
-int runOtherCommands(char *pathOfCommand) 
+int runOtherCommands(char *pathOfCommand, char* command) 
 {
-/*
-	int rc = fork();
-	if (rc < 0)
+	// path of command /commands	
+	if(pathOfCommand == NULL)
 	{
+		printf("they didnt put anthing");
+		printf("%s", command);
+		//use the default path
+	} else 
+	{
+		// parse through the string 
+		
+		int rc = fork();
+		if (rc < 0)
+		{
 	
-	} else if (rc == 0)
-	{
-		char* allArgs[] = {"./filename", "1", "2" ..., NULL}
-		execv(args[0], args); 
+		} else if (rc == 0)
+		{
+			char* allArgs[] = {"/bin", NULL};
+		
+			if(execv(allArgs[0], allArgs) == -1)
+			{ // cannot run it
+				exit(0);
+			}
+		} else { // parent
+			wait(NULL); // parent must wait for child process to finish
 
-	} else { // parent
-		wait(NULL); // parent must wait for child process to finish
+		}	
 
 	}
-
-*/
 
 	return 0;
 }
@@ -184,11 +200,12 @@ int contains(char* buffer, int ascii)
 
 // Sets the path of the executables
 // Parameters: the entire line of user input
-// Returns: 0 if succeed, 1 if fail to set path
-int setPath(char* buffer)
+// Returns: a string containing all of the setpaths seperated by colons
+char* setPath(char* buffer)
 {
 	int success = 1; 
-	char totalPath[255];
+	char* totalPath;
+	totalPath = (char*)malloc(sizeof(char) * 255);
 	// strdup duplicates the string, in this case it gets the current path an puts it into 
 	// oldEnv (after calling getenv)
 	// getenv searches for the environement string by the name and returns the value of the string
@@ -208,11 +225,9 @@ int setPath(char* buffer)
 		} else
 			break; // there is no more tokens 
 	}
-	
 	success = setenv("PATH", totalPath, 1);
 	printf("Final Path =%s\n", totalPath);
 	
-	// system("./yo/hello")
 	if (success == 0) 
 	{
 		//printf("it worked");
@@ -221,7 +236,7 @@ int setPath(char* buffer)
 		//printf("it failed");
 	}
 	free(oldEnv); // free up memory created by strdup
-	return success;
+	return totalPath;
 }
 // Changes the path of the user
 // Parameters: buffer is the line the user typed in
