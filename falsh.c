@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+int redirection(char* command, char* filename);
 void runOtherCommands(char* command);
 int contains(char* buffer, int ascii);
 void printIntro();
@@ -86,7 +87,9 @@ int main(int argc, char * argv[])
 			} 
 		} else if(contains(buffer, '>') == 0) // go into redirection
 		{	
+			int success = redirection("", "");
 			//int num = contains(buffer, '>');
+			
 			//printf("This contains a redirection: %s\n", buffer);
 		//	close(1); // close the output
 		
@@ -95,6 +98,10 @@ int main(int argc, char * argv[])
 			if (strcmp(setPathStr, "setpath") == 0)	
 			{
 				int success = setPath(buffer);
+			} else 
+			{
+				runOtherCommands(buffer);
+
 			}
 		} else 
 		{
@@ -102,7 +109,7 @@ int main(int argc, char * argv[])
 				printf("Setpath must be accompanied by at least one directory.\n");	
 			else 
 			{
-				runOtherCommands(buffer);
+				printf("command not found.\n");		
 			}
 		}
 //		free(setPathStr); // deallocate memory
@@ -117,6 +124,27 @@ int main(int argc, char * argv[])
 // Returns: 0 if successfully ran, otherwise returns false
 void runOtherCommands(char* buffer) 
 {
+
+	char* allArgs[255]; //{finalPathOfExec, NULL};	
+	int start = 1;
+	allArgs[0] = (char*)malloc(sizeof(char) * 255);
+	char *userTkn = strtok(buffer, " ");
+	while(userTkn != NULL)
+	{
+		printf("%s", userTkn);
+		userTkn = strtok(NULL, " ");
+		if(userTkn != NULL)
+		{
+			allArgs[start] = (char*)malloc(sizeof(char) * 255);
+			strcpy(allArgs[start], userTkn);
+			start++;
+		}
+	}
+	allArgs[start] = NULL;
+	
+
+
+
 	int success = 1;
 	char* pathOfCommand = strdup(getenv("PATH")); // make a copy of your path
 	pathOfCommand[strlen(pathOfCommand) - 1] = '\0';	
@@ -125,8 +153,10 @@ void runOtherCommands(char* buffer)
 	char* command = (char*)malloc(sizeof(char) * 255);
 	strcpy(command, "/");
 	strcat(command, buffer);
-	command[strlen(command) - 1] = '\0';
-
+	//command[strlen(command) - 1] = '\0';
+	command[strlen(command)] = '\0';
+	
+	// every token in the path
 	// parse through the string 
 	char* token = strtok(pathOfCommand, ":");
 	while(token != NULL)
@@ -134,6 +164,7 @@ void runOtherCommands(char* buffer)
 		char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
 		strcpy(finalPathOfExec, token);
 		strcat(finalPathOfExec, command);
+		strcpy(allArgs[0], finalPathOfExec);
 		//printf("%s\n", finalPathOfExec);	
 		int rc = fork();
 		if (rc < 0)
@@ -141,8 +172,8 @@ void runOtherCommands(char* buffer)
 			printf("An error occurred during fork.\n");
 		} else if (rc == 0)
 		{
-			//char* allArgs[] = {"/bin", NULL};	
-			if(execl(finalPathOfExec, finalPathOfExec, NULL) == -1) // cannot run
+			/////	
+			if(execv(finalPathOfExec, allArgs) == -1) // cannot run
 			{
 				exit(0);
 			} else 
@@ -152,11 +183,17 @@ void runOtherCommands(char* buffer)
 		} else // parent 
 		{ 
 			wait(NULL); // parent must wait for child process to finish
-		}	
+		} 	
 		token = strtok(NULL, ":"); // move onto the next directory
+	} 
+//	if(success == 1)
+//		printf("command not found.\n");		
+	
+	for(int i = 0; i < start; i++)
+	{
+			printf("%s\n", allArgs[i]);
 	}
-	if(success == 1)
-		printf("command not found.\n");		
+
 }
 
 // Redirects to a file
@@ -164,26 +201,36 @@ void runOtherCommands(char* buffer)
 // Returns:
 int redirection(char* command, char* filename)
 {
-/*
-	if (filename == NULL)
-		return 1;
-	int fileDesc = open("filename.out", O_CREAT | O_TRUNC | O_WRONLY, 0640);
-			
-	int rc = fork();
-	if (rc == 0) // child
+/*	
+//	if (filename == NULL)
+//		return 1;
+	int pid, status;
+	int newFd; // new file descriptor
+	char *cmd[] = { "/bin/ls", NULL };
+	int other;
+	char * outFile = "testing.out";
+	if (newFd = open(outFile, O_CREAT|O_TRUNC|O_WRONLY, 0644) < 0)
 	{
-		//exec("help");
-		dup2(fileDesc, STDOUT_FILENO);
-		close(fileDesc);
-		printf("done");
+		printf("error");
+	}
+			
+	
+	int rc = fork();
+	if (rc < 0)
+	{
+		printf("Error Creating Process");		
+	} else if (rc == 0) // child
+	{
+		execvp(cmd[0], cmd);	
+	
+		dup2(newFd, STDOUT_FILENO); // newFd becomes standard output
+		close(newFd);
 	} else if (rc > 0) // parent
 	{
-		printf("parent\n");
-	} else // error
-	{
-		printf("Error Creating Process");
-	} 
+		while(wait(&status) != -1); // pick up zombie children
+	}
 
+	return 0;
 */
 }
 // Checks if a string contains a specific char
@@ -216,7 +263,7 @@ int setPath(char* buffer)
 	// oldEnv (after calling getenv)
 	// getenv searches for the environement string by the name and returns the value of the string
 	char* oldEnv = strdup(getenv("PATH")); // make a copy of your path
-	//printf("Current Path: %s\n", oldEnv);
+	printf("Current Path: %s\n", oldEnv);
 	// accounts for multiple directories being added
 	char* token = strtok(buffer, " "); // the setpath string, we should ignore that
 	token = strtok(NULL, " "); // get the first token
@@ -231,7 +278,7 @@ int setPath(char* buffer)
 			break; // there is no more tokens 
 	}
 	success = setenv("PATH", totalPath, 1);
-	//printf("Final Path =%s\n", totalPath);
+	printf("Final Path =%s\n", totalPath);
 	free(oldEnv); // free up memory created by strdup
 	return success;
 }
