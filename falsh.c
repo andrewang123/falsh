@@ -100,7 +100,8 @@ int main(int argc, char * argv[])
 			{
 				if(runOtherCommands(userPath, buffer) == 0)
 				{
-					printf("Successfully ran other thing");
+					printf("buffer: %s", buffer);
+					//printf("Successfully ran other thing");
 
 				} else 
 				{
@@ -119,12 +120,14 @@ int main(int argc, char * argv[])
 // Other commands running
 // Parameters:
 // Returns: 0 if successfully ran, otherwise returns false
-int runOtherCommands(char *pathOfCommand, char* command) 
+int runOtherCommands(char *pathOfCommand, char* buffer) 
 {
+	char* command = (char*)malloc(sizeof(char) * 255);
+	strcpy(command, buffer);
 	// path of command /commands	
 	if(pathOfCommand == NULL)
 	{
-		printf("they didnt put anthing");
+		printf("they didnt put anthing\n");
 		printf("%s", command);
 		//use the default path
 	} else 
