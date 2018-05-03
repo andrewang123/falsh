@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+int runOtherCommands(char* pathOfCommand);
 int contains(char* buffer, int ascii);
 void printIntro();
 int setPath(char* buffer);
@@ -91,8 +92,18 @@ int main(int argc, char * argv[])
 		{
 			if (strcmp(buffer, "setpath\n") == 0) // if the user just uses setpath
 				printf("Setpath must be accompanied by at least one directory.\n");	
-			else
-				printf("command not found.\n");
+			else 
+			{
+				if(runOtherCommands("TEMP") == 0)
+				{
+					printf("Successfully ran other thing");
+
+				} else 
+				{
+					printf("command not found.\n");
+				
+				}
+			}
 		}
 		free(setPathStr); // deallocate memory
 		free(bufferCpy); // deallocate memory
@@ -101,12 +112,37 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
+// Other commands running
+// Parameters:
+// Returns: 0 if successfully ran, otherwise returns false
+int runOtherCommands(char *pathOfCommand) 
+{
+/*
+	int rc = fork();
+	if (rc < 0)
+	{
+	
+	} else if (rc == 0)
+	{
+		char* allArgs[] = {"./filename", "1", "2" ..., NULL}
+		execv(args[0], args); 
+
+	} else { // parent
+		wait(NULL); // parent must wait for child process to finish
+
+	}
+
+*/
+
+	return 0;
+}
 
 // Redirects to a file
 // Parameters:
 // Returns:
 int redirection(char* command, char* filename)
 {
+/*
 	if (filename == NULL)
 		return 1;
 	int fileDesc = open("filename.out", O_CREAT | O_TRUNC | O_WRONLY, 0640);
@@ -126,7 +162,7 @@ int redirection(char* command, char* filename)
 		printf("Error Creating Process");
 	} 
 
-
+*/
 }
 // Checks if a string contains a specific char
 // Parameters: A string
