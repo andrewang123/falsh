@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-int redirection(char* command, char* filename);
+int redirection(char* buffer);
 void runOtherCommands(char* command);
 int contains(char* buffer, int ascii);
 void printIntro();
@@ -87,7 +87,7 @@ int main(int argc, char * argv[])
 			} 
 		} else if(contains(buffer, '>') == 0) // go into redirection
 		{	
-			int success = redirection("", "");
+			int success = redirection(buffer);
 			//int num = contains(buffer, '>');
 			
 			//printf("This contains a redirection: %s\n", buffer);
@@ -208,7 +208,7 @@ void runOtherCommands(char* buffer)
 					exit(0); // exit the child process
 				} else 
 				{
-					success = 0;	
+					//success = 0;	doesnt work need to pass as pid
 				}
 			} else // parent 
 			{ 	// if wait is successful than it returns the process if od the child
@@ -242,7 +242,7 @@ void runOtherCommands(char* buffer)
 					exit(0); // exits the child process
 				} else 
 				{
-					success = 0;	
+					// Doesnt work because need to pass pid success = 0;	
 				}
 			} else // parent 
 			{ 
@@ -258,22 +258,112 @@ void runOtherCommands(char* buffer)
 	free(pathOfCommand);
 	free(command);
 	free(anotherBuffer);
-//	free(firstToken);
 	free(cpyOfCommandPath);
 	for(int i = 0; i < start; i++)
 	{
 		free(allArgs[i]);
 	}
-	if(success == 1)
-		printf("command not found.\n");		
+	//if(success == 1)
+		//printf("command not found.\n");		
 }
 
-// Redirects to a file
-// Parameters:
-// Returns:
-int redirection(char* command, char* filename)
+// Redirects output of a command to a file
+// Parameters: buffer is the users input that they type in
+// Returns: 0 if redirection success otherwise 1 if failed
+int redirection(char* buffer)
 {
+
+	// TO DO LIST: 
+	// get the command
+	// run the command where the puts is
+	// filename.log
+	// make sure it doesnt append it truncates
+//	printf("%s", buffer);	
+
+	//remove the /n at the end
+	char * copyBuffer = strdup(buffer);
+	copyBuffer[strlen(copyBuffer) - 1] = '\0';
+//	printf("%s", copyBuffer);	
+
+	char* token = strtok(copyBuffer, " "); // should be the first command
+	//printf("THE COMMAND %s", command);
+	char* command = (char*)malloc(255 * sizeof(char));
+	strcpy(command, token);
+//	printf("THE COMMAND IS%s\n", command);
+	if(strcmp(command, ">") == 0)
+	{
+		printf("Invalid redirection call\n"); // maybe p error here
+		return 1;
+	}
+
+
+
+	char* fileName = (char*) malloc(sizeof(char) * 255);
+	if(command != NULL) 
+	{
+	
+//		for(int i = 0; i < 2; i++)
+//		{
+			token = strtok(NULL, " ");
+		int i = 0;
+			if(strcmp(token, ">") != 0 && i == 0) // failture ie hello there >
+			{	
+				printf("second element should be a >\n");
+				return 1;
+			} else if(token  == NULL) 
+			{
+				printf("missing filename\n");
+				return 1; // failed because no filename
+			} else {
+				printf("FAIL HERE");
+				return 1;
+				//strcpy(fileName, keepMoving);
+			}
+//		}
+		printf("%s\n", command);
+	//	printf("%s\n", keepMoving);
+		printf("%s\n", fileName);
+			
+	} else // shouldnt be null because that means there is no token after >
+	{
+		printf("Not a valid redirection call. i.e -> command > filename");
+		return 0;
+		
+	}	
 /*	
+	int out = open("cout.log", O_RDWR|O_CREAT|O_APPEND, 0600);
+	if (-1 == out) { perror("opening cout.log"); return 255; }
+
+	int err = open("cerr.log", O_RDWR|O_CREAT|O_APPEND, 0600);
+    	if (-1 == err) { perror("opening cerr.log"); return 255; }
+
+    	int save_out = dup(fileno(stdout));
+    	int save_err = dup(fileno(stderr));
+
+    	if (-1 == dup2(out, fileno(stdout))) { perror("cannot redirect stdout"); return 255; }
+    	if (-1 == dup2(err, fileno(stderr))) { perror("cannot redirect stderr"); return 255; }
+
+    	puts("doing an ls or something now");
+
+    	fflush(stdout); close(out);
+    	fflush(stderr); close(err);
+
+    	dup2(save_out, fileno(stdout));
+    	dup2(save_err, fileno(stderr));
+
+    	close(save_out);
+    	close(save_err);
+
+    	puts("back to normal output");
+
+    	return 0;
+
+*/
+
+
+
+/*	
+
 //	if (filename == NULL)
 //		return 1;
 	int pid, status;
