@@ -125,80 +125,78 @@ int main(int argc, char * argv[])
 // Returns: 0 if successfully ran, otherwise returns false
 void runOtherCommands(char* buffer) 
 {
-	buffer[strlen(buffer) - 1] = '\0';
-	char* backupBuffer = strdup(buffer); 	
-//	backupBuffer[strlen(backupBuffer)] = '\0';
-//	printf("%s", backupBuffer);
-	char* allArgs[255]; //{finalPathOfExec, NULL};	
-	int start = 1;
-	allArgs[0] = (char*)malloc(sizeof(char) * 255);
-	char *userTkn = strtok(backupBuffer, " ");
+	buffer[strlen(buffer) - 1] = '\0'; // change the user input so that it gets rid of the \n 
+	// strdup returns NULL if insufficient memory was available otherwise it returns a pointer to the duplicated string
+	// the parameter it takes is a string that you want to duplicate
+	char* backupBuffer = strdup(buffer); //make a copy of the buffer and set it equal to backupBuffer
+	char* allArgs[255]; // An array of strings to hold all of the user input
+	int start = 1; 
+	allArgs[0] = (char*)malloc(sizeof(char) * 255); // dynamically allocate memory
+	// strtok takes in a string and a delimeter, the delimeter is what seperates the strings
+	// It returns a token, the first param is the string to be broken up into tokens
+	// The second parameter is what is seperating each token
+	char *userTkn = strtok(backupBuffer, " "); //find the token before the space
 	while(userTkn != NULL)
 	{
-//		printf("%s", userTkn);
 		userTkn = strtok(NULL, " ");
 		if(userTkn != NULL)
 		{
-			allArgs[start] = (char*)malloc(sizeof(char) * 255);
-			strcpy(allArgs[start], userTkn);
+			allArgs[start] = (char*)malloc(sizeof(char) * 255); // allocate memory on the heap
+			// strcpy takes in two parameters the destination to be copied too and the thing that you want to copy
+			strcpy(allArgs[start], userTkn); // copies the token into the array of strings
 			start++;
 		}
 	}
-//	if(userTkn == NULL)
-//		allArgs[0] 
 	allArgs[start] = '\0'; // make the last index null
-/*	if (start >= 2)
-	{
-			char* secondLast = allArgs[start - 1];
-//			printf("SECOND LAST: %s",secondLast);
-			secondLast[strlen(secondLast) - 1] = '\0';
-			strcpy(allArgs[start - 1], secondLast);
-	}
-
-*/
 	int success = 1;
+	// strdup: returns a pointer to a duplicate string in the heap
+	// parameters: a string that is to be copied
+	// getenv: gets the value of the environment variable
+	// parameter: the path in which it should look ex HOME, PATH
 	char* pathOfCommand = strdup(getenv("PATH")); // make a copy of your path
-//	pathOfCommand[strlen(pathOfCommand) - 1] = '\0';	
-//	printf("THE PATH IS %s", pathOfCommand);
 	//remove the \n and add the forward slash to the beginning of the command
-	char* command = (char*)malloc(sizeof(char) * 255);
-	strcpy(command, "/");
-	char* anotherBuffer = (char*)malloc(sizeof(char) * 255);
+	char* command = (char*)malloc(sizeof(char) * 255); // allocate on heap
+	strcpy(command, "/"); // make the first index a slash
+	char* anotherBuffer = (char*)malloc(sizeof(char) * 255); // dynamically allocate memory
 	strcpy(anotherBuffer, buffer);
+	// strtok takes in a string and a delimeter, the delimeter is what seperates the strings
+	// It returns a token, the first param is the string to be broken up into tokens
+	// The second parameter is what is seperating each token	
 	char *firstToken = strtok(anotherBuffer, " ");	
 	if(firstToken == NULL) // mean that it is just a single argument
 	{
+		// appends the string pointed to by the first parameter, it appends
+		// whatever is in the second paramter
 		strcat(command, buffer);
 	} else { // there is going to be multiple arguments
+		// appends the string pointed to by the first parameter, it appends
+		// whatever is in the second paramter
 		strcat(command, firstToken);
 	}
 
-//	command[strlen(command) - 1] = '\0';
-//	command[strlen(command)] = '\0';
-
-//	printf("THE COMMAND IS: %s", command);	
 	char * cpyOfCommandPath = strdup(pathOfCommand); // makes a deep copy of path of command so we can use it for last path 
-	// every token in the path
-	// parse through the string 
+	// strtok takes in a string and a delimeter, the delimeter is what seperates the strings
+	// It returns a token, the first param is the string to be broken up into tokens
+	// The second parameter is what is seperating each token		
 	char* token = strtok(pathOfCommand, ":");
 	if (token != NULL)
 	{	
 		while(token != NULL)
 		{
+			// allocate memory on the heap
 			char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
-			strcpy(finalPathOfExec, token);
-			strcat(finalPathOfExec, command);
-		
-	//		finalPathOfExec[strlen(finalPathOfExec) - 1] = '\0';
-			strcpy(allArgs[0], finalPathOfExec);
-		//	printf("%s\n", finalPathOfExec);	
+			// construct the full path of the executed program ex) /bin/ls
+			strcpy(finalPathOfExec, token); // copy the token to the final path
+			strcat(finalPathOfExec, command);// append the command to the final path
+			strcpy(allArgs[0], finalPathOfExec); // put the final path in the array of strings that will be used in the exec call
+
+/////////////
 			int rc = fork();
 			if (rc < 0)
 			{
 				printf("An error occurred during fork.\n");
 			} else if (rc == 0)
 			{
-			//	char* test[] = {"/bin/ls", NULL};	
 	//			printf("final path of exec : %s\n", finalPathOfExec);
 				if(execvp(finalPathOfExec, allArgs) == -1) // cannot run
 				{
@@ -226,7 +224,6 @@ void runOtherCommands(char* buffer)
 				printf("An error occurred during fork.\n");
 			} else if (rc == 0)
 			{
-				//char * test[] = {"./ls", NULL};	
 				//printf("final path of exec : %s", finalPathOfExec);
 				if(execv(finalPathOfExec, allArgs) == -1) // cannot run
 				{
@@ -247,7 +244,6 @@ void runOtherCommands(char* buffer)
 	{
 //			printf("%s\n", allArgs[i]);
 	}
-
 }
 
 // Redirects to a file
