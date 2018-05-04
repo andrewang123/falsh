@@ -100,7 +100,7 @@ int main(int argc, char * argv[])
 				int success = setPath(buffer);
 			} else 
 			{
-				runOtherCommands(buffer);
+				runOtherCommands(buffer); // run for more than one "argc"
 
 			}
 		} else 
@@ -109,7 +109,8 @@ int main(int argc, char * argv[])
 				printf("Setpath must be accompanied by at least one directory.\n");	
 			else 
 			{
-				printf("command not found.\n");		
+				runOtherCommands(buffer); // run for one "argc"
+				//printf("command not found.\n");		
 			}
 		}
 //		free(setPathStr); // deallocate memory
@@ -131,7 +132,7 @@ void runOtherCommands(char* buffer)
 	char *userTkn = strtok(buffer, " ");
 	while(userTkn != NULL)
 	{
-		printf("%s", userTkn);
+//		printf("%s", userTkn);
 		userTkn = strtok(NULL, " ");
 		if(userTkn != NULL)
 		{
@@ -140,22 +141,23 @@ void runOtherCommands(char* buffer)
 			start++;
 		}
 	}
-	allArgs[start] = NULL;
+	allArgs[start] = '\0'; // make the last index null
 	
 
 
 
 	int success = 1;
 	char* pathOfCommand = strdup(getenv("PATH")); // make a copy of your path
-	pathOfCommand[strlen(pathOfCommand) - 1] = '\0';	
+//	pathOfCommand[strlen(pathOfCommand) - 1] = '\0';	
 	
 	//remove the \n and add the forward slash to the beginning of the command
 	char* command = (char*)malloc(sizeof(char) * 255);
 	strcpy(command, "/");
 	strcat(command, buffer);
-	//command[strlen(command) - 1] = '\0';
+//	command[strlen(command) - 1] = '\0';
 	command[strlen(command)] = '\0';
 	
+	char * cpyOfCommandPath = strdup(pathOfCommand); // makes a deep copy of path of command so we can use it for last path 
 	// every token in the path
 	// parse through the string 
 	char* token = strtok(pathOfCommand, ":");
@@ -164,6 +166,8 @@ void runOtherCommands(char* buffer)
 		char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
 		strcpy(finalPathOfExec, token);
 		strcat(finalPathOfExec, command);
+		
+		finalPathOfExec[strlen(finalPathOfExec) - 1] = '\0';
 		strcpy(allArgs[0], finalPathOfExec);
 		//printf("%s\n", finalPathOfExec);	
 		int rc = fork();
@@ -172,8 +176,9 @@ void runOtherCommands(char* buffer)
 			printf("An error occurred during fork.\n");
 		} else if (rc == 0)
 		{
-			/////	
-			if(execv(finalPathOfExec, allArgs) == -1) // cannot run
+		//	char* test[] = {"/bin/ls", NULL};	
+//			printf("final path of exec : %s", finalPathOfExec);
+			if(execvp(finalPathOfExec, allArgs) == -1) // cannot run
 			{
 				exit(0);
 			} else 
@@ -185,13 +190,37 @@ void runOtherCommands(char* buffer)
 			wait(NULL); // parent must wait for child process to finish
 		} 	
 		token = strtok(NULL, ":"); // move onto the next directory
-	} 
-//	if(success == 1)
-//		printf("command not found.\n");		
+	}
+/*	// YOU ARE HERE
+	// check the last one
+	char * lastOccurance = 	strrchr( cpyOfCommandPath,':');
+	printf("%s",lastOccurance);
+	int rc = fork();
+	if (rc < 0)
+	{
+		printf("An error occurred during fork.\n");
+	} else if (rc == 0)
+	{
+		char * test[] = {"./ls", NULL};	
+		//printf("final path of exec : %s", finalPathOfExec);
+		if(execv(finalPathOfExec, test) == -1) // cannot run
+		{
+			exit(0);
+		} else 
+		{
+			success = 0;	
+		}
+	} else // parent 
+	{ 
+		wait(NULL); // parent must wait for child process to finish
+	}
+ 	*/	 
+	if(success == 1)
+		printf("command not found.\n");		
 	
 	for(int i = 0; i < start; i++)
 	{
-			printf("%s\n", allArgs[i]);
+//			printf("%s\n", allArgs[i]);
 	}
 
 }
@@ -256,7 +285,8 @@ int contains(char* buffer, int ascii)
 // Returns: a string containing all of the setpaths seperated by colons
 int setPath(char* buffer)
 {
-	int success = 1; 
+	int success = 1;
+	buffer[strlen(buffer) - 1] = '\0'; 
 	char* totalPath;
 	totalPath = (char*)malloc(sizeof(char) * 255);
 	// strdup duplicates the string, in this case it gets the current path an puts it into 
@@ -280,6 +310,7 @@ int setPath(char* buffer)
 	success = setenv("PATH", totalPath, 1);
 	printf("Final Path =%s\n", totalPath);
 	free(oldEnv); // free up memory created by strdup
+	
 	return success;
 }
 // Changes the path of the user
