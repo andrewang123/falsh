@@ -189,35 +189,43 @@ void runOtherCommands(char* buffer)
 			strcpy(finalPathOfExec, token); // copy the token to the final path
 			strcat(finalPathOfExec, command);// append the command to the final path
 			strcpy(allArgs[0], finalPathOfExec); // put the final path in the array of strings that will be used in the exec call
-
-/////////////
+			// create a child process
+			// returns a -1 if fork failed, 0 if on child process and 1 if on parent process
+			// when a child process is created it basically means that it is a copy of its parents
 			int rc = fork();
 			if (rc < 0)
 			{
 				printf("An error occurred during fork.\n");
 			} else if (rc == 0)
 			{
-	//			printf("final path of exec : %s\n", finalPathOfExec);
+				//printf("final path of exec : %s\n", finalPathOfExec);
+				// execvp exeutes a file
+				// the first parameter is the file location, the 2nd parameter is a list of strings that refers to the arguments, i.e when you start main you have argv[] which is 
+				//the argument the user types in in the command line
+				// Return values: -1 if an error occured (couldnt find the file)
 				if(execvp(finalPathOfExec, allArgs) == -1) // cannot run
 				{
-					exit(0);
+					exit(0); // exit the child process
 				} else 
 				{
 					success = 0;	
 				}
 			} else // parent 
-			{ 
+			{ 	// if wait is successful than it returns the process if od the child
+				// if there is an error than -1 is returned
 				wait(NULL); // parent must wait for child process to finish
 			} 	
-			token = strtok(NULL, ":"); // move onto the next directory
+			token = strtok(NULL, ":"); // move onto the next directory (refer up for more details
 		}
 	} else {
-	
-			char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
-			strcpy(finalPathOfExec, pathOfCommand);
-			strcat(finalPathOfExec, command);
-			strcpy(allArgs[0], finalPathOfExec);
-	
+			// the remaininding code is very similair to the ones above, refer above for more detailed comments
+			char* finalPathOfExec = (char *)malloc(sizeof(char) * 255); // allocate on heap
+			strcpy(finalPathOfExec, pathOfCommand); // copy pathOfCommand into finalPathOfExe
+			strcat(finalPathOfExec, command); // appends command to final path
+			strcpy(allArgs[0], finalPathOfExec); // copy finalpath of exec to the first index
+			// create a child process
+			// returns a -1 if fork failed, 0 if on child process and 1 if on parent process
+			// when a child process is created it basically means that it is a copy of its parents	
 			int rc = fork();
 			if (rc < 0)
 			{
@@ -225,9 +233,13 @@ void runOtherCommands(char* buffer)
 			} else if (rc == 0)
 			{
 				//printf("final path of exec : %s", finalPathOfExec);
+				// execvp exeutes a file
+				// the first parameter is the file location, the 2nd parameter is a list of strings that refers to the arguments, i.e when you start main you have argv[] which is 
+				//the argument the user types in in the command line
+				// Return values: -1 if an error occured (couldnt find the file)
 				if(execv(finalPathOfExec, allArgs) == -1) // cannot run
 				{
-					exit(0);
+					exit(0); // exits the child process
 				} else 
 				{
 					success = 0;	
@@ -236,14 +248,24 @@ void runOtherCommands(char* buffer)
 			{ 
 				wait(NULL); // parent must wait for child process to finish
 			}
+			free(finalPathOfExec);
+
  		}
-	if(success == 1)
-		printf("command not found.\n");		
-	
+
+	// free all of the heap allocated variables
+	free(backupBuffer);
+	free(userTkn);
+	free(pathOfCommand);
+	free(command);
+	free(anotherBuffer);
+//	free(firstToken);
+	free(cpyOfCommandPath);
 	for(int i = 0; i < start; i++)
 	{
-//			printf("%s\n", allArgs[i]);
+		free(allArgs[i]);
 	}
+	if(success == 1)
+		printf("command not found.\n");		
 }
 
 // Redirects to a file
@@ -314,7 +336,7 @@ int setPath(char* buffer)
 	// oldEnv (after calling getenv)
 	// getenv searches for the environement string by the name and returns the value of the string
 	char* oldEnv = strdup(getenv("PATH")); // make a copy of your path
-	printf("Current Path: %s\n", oldEnv);
+	printf("Old Path: %s\n", oldEnv);
 	// accounts for multiple directories being added
 	char* token = strtok(buffer, " "); // the setpath string, we should ignore that
 	token = strtok(NULL, " "); // get the first token
@@ -329,7 +351,7 @@ int setPath(char* buffer)
 			break; // there is no more tokens 
 	}
 	success = setenv("PATH", totalPath, 1);
-	printf("Final Path =%s\n", totalPath);
+	printf("New Path =%s\n", totalPath);
 	free(oldEnv); // free up memory created by strdup
 	
 	return success;
