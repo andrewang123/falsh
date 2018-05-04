@@ -125,11 +125,14 @@ int main(int argc, char * argv[])
 // Returns: 0 if successfully ran, otherwise returns false
 void runOtherCommands(char* buffer) 
 {
-
+	buffer[strlen(buffer) - 1] = '\0';
+	char* backupBuffer = strdup(buffer); 	
+//	backupBuffer[strlen(backupBuffer)] = '\0';
+//	printf("%s", backupBuffer);
 	char* allArgs[255]; //{finalPathOfExec, NULL};	
 	int start = 1;
 	allArgs[0] = (char*)malloc(sizeof(char) * 255);
-	char *userTkn = strtok(buffer, " ");
+	char *userTkn = strtok(backupBuffer, " ");
 	while(userTkn != NULL)
 	{
 //		printf("%s", userTkn);
@@ -141,11 +144,18 @@ void runOtherCommands(char* buffer)
 			start++;
 		}
 	}
+//	if(userTkn == NULL)
+//		allArgs[0] 
 	allArgs[start] = '\0'; // make the last index null
-	
+/*	if (start >= 2)
+	{
+			char* secondLast = allArgs[start - 1];
+			printf("SECOND LAST: %s",secondLast);
+			secondLast[strlen(secondLast) - 1] = '\0';
+			strcpy(allArgs[start - 1], secondLast);
+	}
 
-
-
+*/
 	int success = 1;
 	char* pathOfCommand = strdup(getenv("PATH")); // make a copy of your path
 //	pathOfCommand[strlen(pathOfCommand) - 1] = '\0';	
@@ -153,10 +163,20 @@ void runOtherCommands(char* buffer)
 	//remove the \n and add the forward slash to the beginning of the command
 	char* command = (char*)malloc(sizeof(char) * 255);
 	strcpy(command, "/");
-	strcat(command, buffer);
+	char* anotherBuffer = (char*)malloc(sizeof(char) * 255);
+	strcpy(anotherBuffer, buffer);
+	char *firstToken = strtok(anotherBuffer, " ");	
+	if(firstToken == NULL) // mean that it is just a single argument
+	{
+		strcat(command, buffer);
+	} else { // there is going to be multiple arguments
+		strcat(command, firstToken);
+	}
+
 //	command[strlen(command) - 1] = '\0';
-	command[strlen(command)] = '\0';
-	
+//	command[strlen(command)] = '\0';
+
+//	printf("THE COMMAND IS: %s", command);	
 	char * cpyOfCommandPath = strdup(pathOfCommand); // makes a deep copy of path of command so we can use it for last path 
 	// every token in the path
 	// parse through the string 
@@ -167,9 +187,9 @@ void runOtherCommands(char* buffer)
 		strcpy(finalPathOfExec, token);
 		strcat(finalPathOfExec, command);
 		
-		finalPathOfExec[strlen(finalPathOfExec) - 1] = '\0';
+//		finalPathOfExec[strlen(finalPathOfExec) - 1] = '\0';
 		strcpy(allArgs[0], finalPathOfExec);
-		//printf("%s\n", finalPathOfExec);	
+//		printf("%s\n", finalPathOfExec);	
 		int rc = fork();
 		if (rc < 0)
 		{
@@ -177,7 +197,7 @@ void runOtherCommands(char* buffer)
 		} else if (rc == 0)
 		{
 		//	char* test[] = {"/bin/ls", NULL};	
-//			printf("final path of exec : %s", finalPathOfExec);
+			printf("final path of exec : %s\n", finalPathOfExec);
 			if(execvp(finalPathOfExec, allArgs) == -1) // cannot run
 			{
 				exit(0);
@@ -191,36 +211,42 @@ void runOtherCommands(char* buffer)
 		} 	
 		token = strtok(NULL, ":"); // move onto the next directory
 	}
-/*	// YOU ARE HERE
+/*	
+	// YOU ARE HERE
 	// check the last one
-	char * lastOccurance = 	strrchr( cpyOfCommandPath,':');
-	printf("%s",lastOccurance);
-	int rc = fork();
-	if (rc < 0)
+	if(token == NULL)
 	{
-		printf("An error occurred during fork.\n");
-	} else if (rc == 0)
-	{
-		char * test[] = {"./ls", NULL};	
-		//printf("final path of exec : %s", finalPathOfExec);
-		if(execv(finalPathOfExec, test) == -1) // cannot run
+		char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
+		strcpy(finalPathOfExec, pathOfCommand);
+		strcat(finalPathOfExec, command);
+		strcpy(allArgs[0], finalPathOfExec);
+	
+		int rc = fork();
+		if (rc < 0)
 		{
-			exit(0);
-		} else 
+			printf("An error occurred during fork.\n");
+		} else if (rc == 0)
 		{
-			success = 0;	
+			//char * test[] = {"./ls", NULL};	
+			//printf("final path of exec : %s", finalPathOfExec);
+			if(execv(finalPathOfExec, allArgs) == -1) // cannot run
+			{
+				exit(0);
+			} else 
+			{
+				success = 0;	
+			}
+		} else // parent 
+		{ 
+			wait(NULL); // parent must wait for child process to finish
 		}
-	} else // parent 
-	{ 
-		wait(NULL); // parent must wait for child process to finish
-	}
- 	*/	 
+ 	}
 	if(success == 1)
 		printf("command not found.\n");		
-	
+*/	
 	for(int i = 0; i < start; i++)
 	{
-//			printf("%s\n", allArgs[i]);
+			printf("%s\n", allArgs[i]);
 	}
 
 }
