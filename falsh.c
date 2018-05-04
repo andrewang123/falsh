@@ -150,7 +150,7 @@ void runOtherCommands(char* buffer)
 /*	if (start >= 2)
 	{
 			char* secondLast = allArgs[start - 1];
-			printf("SECOND LAST: %s",secondLast);
+//			printf("SECOND LAST: %s",secondLast);
 			secondLast[strlen(secondLast) - 1] = '\0';
 			strcpy(allArgs[start - 1], secondLast);
 	}
@@ -159,7 +159,7 @@ void runOtherCommands(char* buffer)
 	int success = 1;
 	char* pathOfCommand = strdup(getenv("PATH")); // make a copy of your path
 //	pathOfCommand[strlen(pathOfCommand) - 1] = '\0';	
-	
+//	printf("THE PATH IS %s", pathOfCommand);
 	//remove the \n and add the forward slash to the beginning of the command
 	char* command = (char*)malloc(sizeof(char) * 255);
 	strcpy(command, "/");
@@ -181,72 +181,71 @@ void runOtherCommands(char* buffer)
 	// every token in the path
 	// parse through the string 
 	char* token = strtok(pathOfCommand, ":");
-	while(token != NULL)
-	{
-		char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
-		strcpy(finalPathOfExec, token);
-		strcat(finalPathOfExec, command);
+	if (token != NULL)
+	{	
+		while(token != NULL)
+		{
+			char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
+			strcpy(finalPathOfExec, token);
+			strcat(finalPathOfExec, command);
 		
-//		finalPathOfExec[strlen(finalPathOfExec) - 1] = '\0';
-		strcpy(allArgs[0], finalPathOfExec);
-//		printf("%s\n", finalPathOfExec);	
-		int rc = fork();
-		if (rc < 0)
-		{
-			printf("An error occurred during fork.\n");
-		} else if (rc == 0)
-		{
-		//	char* test[] = {"/bin/ls", NULL};	
-			printf("final path of exec : %s\n", finalPathOfExec);
-			if(execvp(finalPathOfExec, allArgs) == -1) // cannot run
+	//		finalPathOfExec[strlen(finalPathOfExec) - 1] = '\0';
+			strcpy(allArgs[0], finalPathOfExec);
+		//	printf("%s\n", finalPathOfExec);	
+			int rc = fork();
+			if (rc < 0)
 			{
-				exit(0);
-			} else 
+				printf("An error occurred during fork.\n");
+			} else if (rc == 0)
 			{
-				success = 0;	
-			}
-		} else // parent 
-		{ 
-			wait(NULL); // parent must wait for child process to finish
-		} 	
-		token = strtok(NULL, ":"); // move onto the next directory
-	}
-/*	
-	// YOU ARE HERE
-	// check the last one
-	if(token == NULL)
-	{
-		char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
-		strcpy(finalPathOfExec, pathOfCommand);
-		strcat(finalPathOfExec, command);
-		strcpy(allArgs[0], finalPathOfExec);
-	
-		int rc = fork();
-		if (rc < 0)
-		{
-			printf("An error occurred during fork.\n");
-		} else if (rc == 0)
-		{
-			//char * test[] = {"./ls", NULL};	
-			//printf("final path of exec : %s", finalPathOfExec);
-			if(execv(finalPathOfExec, allArgs) == -1) // cannot run
-			{
-				exit(0);
-			} else 
-			{
-				success = 0;	
-			}
-		} else // parent 
-		{ 
-			wait(NULL); // parent must wait for child process to finish
+			//	char* test[] = {"/bin/ls", NULL};	
+	//			printf("final path of exec : %s\n", finalPathOfExec);
+				if(execvp(finalPathOfExec, allArgs) == -1) // cannot run
+				{
+					exit(0);
+				} else 
+				{
+					success = 0;	
+				}
+			} else // parent 
+			{ 
+				wait(NULL); // parent must wait for child process to finish
+			} 	
+			token = strtok(NULL, ":"); // move onto the next directory
 		}
- 	}
+	} else {
+	
+			char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
+			strcpy(finalPathOfExec, pathOfCommand);
+			strcat(finalPathOfExec, command);
+			strcpy(allArgs[0], finalPathOfExec);
+	
+			int rc = fork();
+			if (rc < 0)
+			{
+				printf("An error occurred during fork.\n");
+			} else if (rc == 0)
+			{
+				//char * test[] = {"./ls", NULL};	
+				//printf("final path of exec : %s", finalPathOfExec);
+				if(execv(finalPathOfExec, allArgs) == -1) // cannot run
+				{
+					exit(0);
+				} else 
+				{
+					success = 0;	
+				}
+			} else // parent 
+			{ 
+				wait(NULL); // parent must wait for child process to finish
+			}
+ 		}
 	if(success == 1)
 		printf("command not found.\n");		
-*/	
+	
 	for(int i = 0; i < start; i++)
 	{
-			printf("%s\n", allArgs[i]);
+//			printf("%s\n", allArgs[i]);
 	}
 
 }
