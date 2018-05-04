@@ -289,28 +289,31 @@ int redirection(char* buffer)
 	//printf("THE COMMAND %s", command);
 	char* command = (char*)malloc(255 * sizeof(char));
 	strcpy(command, token);
-//	printf("THE COMMAND IS%s\n", command);
-	if(strcmp(command, ">") == 0)
+	printf("THE COMMAND IS: %s\n", command);
+	if(strcmp(command, ">") == 0) // if the input is only a >
 	{
 		printf("Invalid redirection call\n"); // maybe p error here
 		return 1;
+	} else if(command[strlen(command) - 1] == '>') // if the character is a single token ending in >
+	{
+		printf("Invalid redirection call\n"); // maybe p error here
+		return 1;
+	
 	}
-
-
-
 	char* fileName = (char*) malloc(sizeof(char) * 255);
 	if(command != NULL) 
 	{
 	
-//		for(int i = 0; i < 2; i++)
-//		{
+		for(int i = 0; i < 2; i++)
+		{
 			token = strtok(NULL, " ");
+			printf("THE TOKEN IS: %s\n", token);
 		int i = 0;
-			if(strcmp(token, ">") != 0 && i == 0) // failture ie hello there >
+	/*		if(strcmp(token, ">") != 0 && i == 0) // failture ie hello there >
 			{	
 				printf("second element should be a >\n");
 				return 1;
-			} else if(token  == NULL) 
+			} else if(strcmp(token, ">") == 0) 
 			{
 				printf("missing filename\n");
 				return 1; // failed because no filename
@@ -318,11 +321,11 @@ int redirection(char* buffer)
 				printf("FAIL HERE");
 				return 1;
 				//strcpy(fileName, keepMoving);
-			}
-//		}
-		printf("%s\n", command);
+			} */
+		}
+//		printf("%s\n", command);
 	//	printf("%s\n", keepMoving);
-		printf("%s\n", fileName);
+//		printf("%s\n", fileName);
 			
 	} else // shouldnt be null because that means there is no token after >
 	{
