@@ -443,6 +443,8 @@ int redirection(char* buffer)
 int contains(char* buffer, int ascii)
 {
 	int success = 1;
+	// strlen return a number which is the length of the string
+	// it takes in a parameter, which is a string
 	for(int i = 0; i < strlen(buffer); i++)
 	{
 		if(buffer[i] == ascii)
@@ -461,15 +463,18 @@ int contains(char* buffer, int ascii)
 int setPath(char* buffer)
 {
 	int success = 1;
-	buffer[strlen(buffer) - 1] = '\0'; 
+	buffer[strlen(buffer) - 1] = '\0'; // remove the \n from the buffer
 	char* totalPath;
-	totalPath = (char*)malloc(sizeof(char) * 255);
+	totalPath = (char*)malloc(sizeof(char) * 255); // dynamically allocate memory
 	// strdup duplicates the string, in this case it gets the current path an puts it into 
 	// oldEnv (after calling getenv)
 	// getenv searches for the environement string by the name and returns the value of the string
 	char* oldEnv = strdup(getenv("PATH")); // make a copy of your path
 	printf("Old Path: %s\n", oldEnv);
 	// accounts for multiple directories being added
+	// strtok takes in a string and a delimeter, the delimeter is what seperates the strings
+	// It returns a token, the first param is the string to be broken up into tokens
+	// The second parameter is what is seperating each token	
 	char* token = strtok(buffer, " "); // the setpath string, we should ignore that
 	token = strtok(NULL, " "); // get the first token
 	strcpy(totalPath, token); // add that token to the totalPath
@@ -482,10 +487,13 @@ int setPath(char* buffer)
 		} else
 			break; // there is no more tokens 
 	}
+	// returns 0 is successfully changed
+	// returns 1 otherwise (it failed)
+	// Parameters: 1st environement name that is to be changed, 2nd is the string of the environment
+	// values that is passed in, 3rd is whether or not to overwrite. 1 = yes 0 = no
 	success = setenv("PATH", totalPath, 1);
 	printf("New Path =%s\n", totalPath);
-	free(oldEnv); // free up memory created by strdup
-	
+	free(oldEnv); // free up memory created by strdup	
 	return success;
 }
 // Changes the path of the user
@@ -498,9 +506,11 @@ int changeDir(char* buffer)
 	{
 		// getenv returns the value of the path of the designated location
 		// parameter that is passed in is the name of the location
+		// When HOME is specified as the parameter it gets the home directory
 		char *homeDirectPath = getenv("HOME");
 		// chkdir returns a 0 if it successfully changed paths and 1 if it failed to change
 		// takes in the specific path that you want to change to
+		// chdir changes the directory to the string that you passed in
 		ret = chdir(homeDirectPath);
 	} else 
 	{
@@ -526,6 +536,9 @@ int changeDir(char* buffer)
 char* getPWD() 
 {
 	char* cwd; // create an array to hold the current working directory
+	
+	// sizeof gets the amount of bytes the parameter is inside. It is done at compile time
+	// malloc allocate memory in the heap
 	cwd = (char *)malloc(255 * sizeof(char));
 	// first parameter is the name of the buffer that will be used to store the current working directory
 	// second parameter is the number of characters in the buffer area
