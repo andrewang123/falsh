@@ -564,7 +564,18 @@ void printUserDescriptions()
 	printf("If a directory is provided than it will change to that directory.\n");
 	printf("Usage: cd [dir]\n");
 	printf("setpath - overwrites the path with whatever arguements the user enters.\n");
-	printf("Path should only contain /bin\n");
+	printf("Path should only contain /bin\n\n");
+	printf("help - list of all built in commands with short descriptions, aka you are here now!\n");
+	printf("Usage: help\n\n");
+	printf("Redirection\n");
+	printf("The falsh will be able to redirect files using the > \n");
+	printf("When redirecting files: \n1. a missing argument\n2. multiple arguments\n");
+	printf("Will NOT work, it will not run the command, but display a message\n");
+	printf("A filename will be specified after the >\n");
+	printf("redirection will work for both built in functions and other commands in path\n");
+	printf("Usage: command > filename\n\n");
+	printf("Other Commands\n");
+	printf("Any non built in commands will work if it is in the users path.\n");
 	printf("#######################################################################\n");
 
 }
