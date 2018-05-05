@@ -481,7 +481,13 @@ int redirection(char* buffer)
 	// returns -1 if interrupted, 0 if successful
     	close(saveOut);
     	close(saveErr);
-    	return 0;
+	// free heap memeory
+	free(copyBuffer);
+	free(command);
+	free(fileName);
+	free(fileNameError);
+	free(fileNameOut); 
+   	return 0;
 }
 // Checks if a string contains a specific char
 // Parameters: A string
