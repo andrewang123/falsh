@@ -1,0 +1,17 @@
+	/*		int i = 0;
+			if(strcmp(token, ">") != 0 && i == 0) // failture ie hello there >
+			{	
+				printf("second element should be a >\n");
+				return 1;
+			
+		//		printf("missing filename\n");
+		//		return 1; // failed because no filename
+			} else if (token == NULL) {
+				printf("Missing filename\n");
+				return 1;
+			} else {
+				printf("FAIL HERE");
+//				return 1;
+				//strcpy(fileName, keepMoving);
+			} */
+

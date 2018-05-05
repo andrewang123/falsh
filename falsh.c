@@ -303,25 +303,48 @@ int redirection(char* buffer)
 	char* fileName = (char*) malloc(sizeof(char) * 255);
 	if(command != NULL) 
 	{
-	
-		for(int i = 0; i < 2; i++)
+		int counter = 1;
+		while(token != NULL)
 		{
-			token = strtok(NULL, " ");
-			printf("THE TOKEN IS: %s\n", token);
-		int i = 0;
-	/*		if(strcmp(token, ">") != 0 && i == 0) // failture ie hello there >
-			{	
-				printf("second element should be a >\n");
-				return 1;
-			} else if(strcmp(token, ">") == 0) 
+			token = strtok(NULL, " ");	
+			if(counter > 3)
 			{
-				printf("missing filename\n");
-				return 1; // failed because no filename
-			} else {
-				printf("FAIL HERE");
+				printf("too many arguements\n");
 				return 1;
-				//strcpy(fileName, keepMoving);
-			} */
+			}	
+			if(token == NULL && counter < 3)
+			{
+				printf("Too little arguements\n");
+				return 1;
+			}
+			
+			if(counter == 1)
+			{
+				printf("THE TOKEN IS AT ONE: %s\n", token);
+				if(strcmp(token, ">") != 0 )
+				{
+					printf("Failure, multiple arguments are not allowed\n");
+					return 1;
+				}
+			} else if(counter == 2)
+			{
+				printf("THE TOKEN IS AT TWO: %s\n", token);
+			//	if(strcmp(token, ">") == 0 )
+			//	{
+			//		printf("Failure, multiple arguments are not allowed\n");
+			//		return 1;
+			//	}
+		
+			}
+		counter++;	
+		}
+	}	printf("THE END IS HERE\n");
+
+/* //		token = strtok(NULL, " ");
+	
+		if(token != NULL)
+		{	
+			printf("Too many arguements after >\n");
 		}
 //		printf("%s\n", command);
 	//	printf("%s\n", keepMoving);
@@ -332,7 +355,7 @@ int redirection(char* buffer)
 		printf("Not a valid redirection call. i.e -> command > filename");
 		return 0;
 		
-	}	
+	}	*/
 /*	
 	int out = open("cout.log", O_RDWR|O_CREAT|O_APPEND, 0600);
 	if (-1 == out) { perror("opening cout.log"); return 255; }
