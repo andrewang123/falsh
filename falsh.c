@@ -331,38 +331,102 @@ int redirection(char* buffer)
 	
 		printf("The command is: %s\n", command);
 		printf("The filename is: %s\n", fileName);	
+	char *fileNameError = (char*) malloc(sizeof(char) * 255);
+	char *fileNameOut = (char*) malloc(sizeof(char) * 255);
+ 
+	strcpy(fileNameError, fileName);
+	strcat(fileNameError, ".err");
+		
+	strcpy(fileNameOut, fileName);
+	strcat(fileNameOut, ".out");
 	
-/*	
-	int out = open("cout.log", O_RDWR|O_CREAT|O_APPEND, 0600);
-	if (-1 == out) { perror("opening cout.log"); return 255; }
 
-	int err = open("cerr.log", O_RDWR|O_CREAT|O_APPEND, 0600);
-    	if (-1 == err) { perror("opening cerr.log"); return 255; }
+	printf("FileNameOut = %s\n", fileNameOut);
+	printf("FileNameError = %s\n", fileNameError);
 
-    	int save_out = dup(fileno(stdout));
-    	int save_err = dup(fileno(stderr));
+	
+	int out = open(fileNameOut, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR, 0600);
+	if (-1 == out) 
+	{ 
+		perror("opening output file"); 
+		return 255; 
+	}
 
-    	if (-1 == dup2(out, fileno(stdout))) { perror("cannot redirect stdout"); return 255; }
-    	if (-1 == dup2(err, fileno(stderr))) { perror("cannot redirect stderr"); return 255; }
+	int err = open(fileNameError, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR, 0600);
+    	if (-1 == err) { 
+		perror("opening error file"); 
+		return 255; 
+	}
 
-    	puts("doing an ls or something now");
+    	int saveOut = dup(fileno(stdout));
+    	int saveErr = dup(fileno(stderr));
+
+    	if (-1 == dup2(out, fileno(stdout))) 
+	{ 
+		perror("cannot redirect stdout"); 
+		return 255; 
+	}
+    	if (-1 == dup2(err, fileno(stderr))) 
+	{ 
+		perror("cannot redirect stderr"); 
+		return 255; 
+	}
+
+	// ALL THE CODE BELOW HERE UNTIL NEXT ALL CAPS WILL RUN THE COMMAND TO PRINT OUT
+
+	char* pathOfCommand = strdup(getenv("PATH")); // make a copy of your path
+	//printf("THE PATH OF COMMMAND IS: %s\n", pathOfCommand);
+	char* pathToken = strtok(pathOfCommand, ":");
+	if (pathToken != NULL)
+	{	
+		while(pathToken != NULL)
+		{
+			// allocate memory on the heap
+			char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
+			// construct the full path of the executed program ex) /bin/ls
+			strcpy(finalPathOfExec, pathToken); // copy the token to the final path
+			strcat(finalPathOfExec, "/");
+			strcat(finalPathOfExec, command);// append the command to the final path
+			// create a child process
+			// returns a -1 if fork failed, 0 if on child process and 1 if on parent process
+			// when a child process is created it basically means that it is a copy of its parents
+			int rc = fork();
+			if (rc < 0)
+			{
+				printf("An error occurred during fork.\n");
+			} else if (rc == 0)
+			{
+				//printf("final path of exec : %s\n", finalPathOfExec);
+				if(execl(finalPathOfExec, command, NULL) == -1) // cannot run
+				{
+					exit(0); // exit the child process
+				} 
+			} else // parent 
+			{ 	// if wait is successful than it returns the process if od the child
+				// if there is an error than -1 is returned
+				wait(NULL); // parent must wait for child process to finish
+			} 	
+			pathToken = strtok(NULL, ":"); // move onto the next directory (refer up for more details
+		}
+	}
+
+	// END OF CODE THAT IS USED TO PRINT OUT THE COMMAND OUTPUT
+
+
+
 
     	fflush(stdout); close(out);
     	fflush(stderr); close(err);
 
-    	dup2(save_out, fileno(stdout));
-    	dup2(save_err, fileno(stderr));
+    	dup2(saveOut, fileno(stdout));
+    	dup2(saveErr, fileno(stderr));
 
-    	close(save_out);
-    	close(save_err);
+    	close(saveOut);
+    	close(saveErr);
 
     	puts("back to normal output");
 
     	return 0;
-
-*/
-
-
 }
 // Checks if a string contains a specific char
 // Parameters: A string
