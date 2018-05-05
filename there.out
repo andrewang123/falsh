@@ -14,4 +14,20 @@ If a directory is provided than it will change to that directory.
 Usage: cd [dir]
 setpath - overwrites the path with whatever arguements the user enters.
 Path should only contain /bin
+
+help - list of all built in commands with short descriptions, aka you are here now!
+Usage: help
+
+Redirection
+The falsh will be able to redirect files using the > 
+When redirecting files: 
+1. a missing argument
+2. multiple arguments
+Will NOT work, it will not run the command, but display a message
+A filename will be specified after the >
+redirection will work for both built in functions and other commands in path
+Usage: command > filename
+
+Other Commands
+Any non built in commands will work if it is in the users path.
 #######################################################################

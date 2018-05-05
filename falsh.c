@@ -286,37 +286,37 @@ void runOtherCommands(char* buffer)
 // Returns: 0 if redirection success otherwise 1 if failed
 int redirection(char* buffer)
 {
-
-	//remove the /n at the end
+	// strdup returns a pointer to a new string which is a duplicate of the parameter passed
+	// it is essentially a strcpy and a malloc built into one
+	// make a deep copy of the buffer, it is like strcpy but dynamically allocated memory
 	char * copyBuffer = strdup(buffer);
+	//remove the /n at the end
 	copyBuffer[strlen(copyBuffer) - 1] = '\0';
-//	printf("%s", copyBuffer);	
-
 	char* token = strtok(copyBuffer, " "); // should be the first command
-	//printf("THE COMMAND %s", command);
 	char* command = (char*)malloc(255 * sizeof(char));
 	strcpy(command, token);
-	printf("THE COMMAND IS: %s\n", command);
 	if(strcmp(command, ">") == 0) // if the input is only a >
 	{
-		printf("Invalid redirection call\n"); // maybe p error here
+		printf("Invalid redirection call\n");
 		return 1;
 	} else if(command[strlen(command) - 1] == '>') // if the character is a single token ending in >
 	{
-		printf("Invalid redirection call\n"); // maybe p error here
+		printf("Invalid redirection call must have more arguments\n"); 
 		return 1;
-	
 	}
-	char* fileName = (char*) malloc(sizeof(char) * 255);
+	char* fileName = (char*) malloc(sizeof(char) * 255); // allocate on heap
 	if(command != NULL) 
 	{
 		int counter = 1;
-		while(token != NULL)
+		while(token != NULL) // checks if the follows format of command > file
 		{
+			// strtok takes in a string and a delimeter, the delimeter is what seperates the strings
+			// It returns a token, the first param is the string to be broken up into tokens
+			// The second parameter is what is seperating each token
 			token = strtok(NULL, " ");	
 			if(counter > 3)
 			{
-				printf("too many arguements\n");
+				printf("Too many arguements\n");
 				return 1;
 			}	
 			if(token == NULL && counter < 3)
@@ -324,10 +324,9 @@ int redirection(char* buffer)
 				printf("Too little arguements\n");
 				return 1;
 			}
-			
 			if(counter == 1)
 			{
-				printf("THE TOKEN IS AT ONE: %s\n", token);
+				//printf("THE TOKEN IS AT ONE: %s\n", token);
 				if(strcmp(token, ">") != 0 )
 				{
 					printf("Failure, multiple arguments are not allowed\n");
@@ -335,55 +334,77 @@ int redirection(char* buffer)
 				}
 			} else if(counter == 2)
 			{
-				printf("THE TOKEN IS AT TWO: %s\n", token);
-				strcpy(fileName, token);	
+				//printf("THE TOKEN IS AT TWO: %s\n", token);
+				// strcpy takes in two parameters the destination to be copied too and the thing that you want to copy
+				strcpy(fileName, token); // get the filename
 			}
 		counter++;	
 		}
-	}	printf("THE END IS HERE\n");
-
-	
-		printf("The command is: %s\n", command);
-		printf("The filename is: %s\n", fileName);	
+	}	
+	//printf("The command is: %s\n", command);
+	//printf("The filename is: %s\n", fileName);	
+	// allocate on the heap
 	char *fileNameError = (char*) malloc(sizeof(char) * 255);
 	char *fileNameOut = (char*) malloc(sizeof(char) * 255);
- 
+	// create the filename and append the .err or .out on file
+	// appends the string pointed to by the first parameter, it appends
+	// whatever is in the second paramter
 	strcpy(fileNameError, fileName);
 	strcat(fileNameError, ".err");
-		
 	strcpy(fileNameOut, fileName);
 	strcat(fileNameOut, ".out");
 	
-
-	printf("FileNameOut = %s\n", fileNameOut);
-	printf("FileNameError = %s\n", fileNameError);
-
+	//printf("FileNameOut = %s\n", fileNameOut);
+	//printf("FileNameError = %s\n", fileNameError);
 	
+	// opens a file, if it successfully open/create file than it will return 0 otherwise -1
+	// CREATE - creates the file, 0_TRUNC - overrides the file
+	// RDWR - open forread and write to file, IRUSR - read permission, 
+	// IWUSR - write permission
 	int out = open(fileNameOut, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR, 0600);
-	if (-1 == out) 
+	if (out == -1) 
 	{ 
 		perror("opening output file"); 
-		return 255; 
 	}
-
+	// opens a file, if it successfully open/create file than it will return 0 otherwise -1
+	// CREATE - creates the file, 0_TRUNC - overrides the file
+	// RDWR - open forread and write to file, IRUSR - read permission, 
+	// IWUSR - write permission	
 	int err = open(fileNameError, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR, 0600);
-    	if (-1 == err) { 
+    	if (err == -1) { 
 		perror("opening error file"); 
-		return 255; 
 	}
 
-    	int saveOut = dup(fileno(stdout));
+	// duplicates an open file descriptor
+	// takes in one parameter which is the file descriptor that is to be duplicated
+	// it saves the duplicate into an integer, > 0 = success < 0 = failure
+    	// fileno is a funciton that takes in a FILE* stream, examines the stream and returns a file descriptor
+	// if succeed than reutrn integer value of file descriptor, otherwise -1
+	// essentially it is to map a stream pointer to file descriptor
+	int saveOut = dup(fileno(stdout));
     	int saveErr = dup(fileno(stderr));
-
-    	if (-1 == dup2(out, fileno(stdout))) 
+	
+	// duplicates a open file descriptor
+	// returns negative value if fail, otherwise returns positive number
+	// If 2nd param is already open, it is first closed. 
+	// If 1st param equals 2nd param, then dup 2 returns 2nd param without closing it.
+    	// fileno is a funciton that takes in a FILE* stream, examines the stream and returns a file descriptor
+	// if succeed than reutrn integer value of file descriptor, otherwise -1
+	// essentially it is to map a stream pointer to file descriptor
+	if (dup2(out, fileno(stdout)) == -1) 
 	{ 
 		perror("cannot redirect stdout"); 
-		return 255; 
 	}
-    	if (-1 == dup2(err, fileno(stderr))) 
+    	// duplicates a open file descriptor
+	// returns negative value if fail, otherwise returns positive number
+	// If 2nd param is already open, it is first closed. 
+	// If 1st param equals 2nd param, then dup 2 returns 2nd param without closing it.	
+    	// fileno is a funciton that takes in a FILE* stream, examines the stream and returns a file descriptor
+	// if succeed than reutrn integer value of file descriptor, otherwise -1
+	// essentially it is to map a stream pointer to file descriptor		
+	if (dup2(err, fileno(stderr)) == -1) 
 	{ 
 		perror("cannot redirect stderr"); 
-		return 255; 
 	}
 	if(strcmp(command, "help") == 0)
 	{	
@@ -396,7 +417,6 @@ int redirection(char* buffer)
 	} else
 	{
 		// ALL THE CODE BELOW HERE UNTIL NEXT ALL CAPS WILL RUN THE COMMAND TO PRINT OUT
-
 		char* pathOfCommand = strdup(getenv("PATH")); // make a copy of your path
 		//printf("THE PATH OF COMMMAND IS: %s\n", pathOfCommand);
 		char* pathToken = strtok(pathOfCommand, ":");
@@ -434,21 +454,33 @@ int redirection(char* buffer)
 		}
 	}
 	// END OF CODE THAT IS USED TO PRINT OUT THE COMMAND OUTPUT
-
-
-
-
-    	fflush(stdout); close(out);
-    	fflush(stderr); close(err);
-
-    	dup2(saveOut, fileno(stdout));
+    	// flushes out the output buffer in the stream, this means that it clears the output
+	// parameter is a FILE* which refers to the file object in buffered stream
+	// returns 0 success otherwise EOF is error 
+	fflush(stdout); 
+	// closes the file descriptor
+	// returns -1 if interrupted, 0 if successful	
+	close(out);
+    	// flushes out the output buffer in the stream, this means that it clears the output
+	// parameter is a FILE* which refers to the file object in buffered stream
+	// returns 0 success otherwise EOF is error 
+	fflush(stderr); 
+	// closes the file descriptor
+	// returns -1 if interrupted, 0 if successful		
+	close(err);
+	// duplicates a open file descriptor
+	// returns negative value if fail, otherwise returns positive number
+	// If 2nd param is already open, it is first closed. 
+	// If 1st param equals 2nd param, then dup 2 returns 2nd param without closing it.
+       	// fileno is a funciton that takes in a FILE* stream, examines the stream and returns a file descriptor
+	// if succeed than reutrn integer value of file descriptor, otherwise -1
+	// essentially it is to map a stream pointer to file descriptor		
+	dup2(saveOut, fileno(stdout));
     	dup2(saveErr, fileno(stderr));
-
+	// closes the file descriptor
+	// returns -1 if interrupted, 0 if successful
     	close(saveOut);
     	close(saveErr);
-
-    	puts("back to normal output");
-
     	return 0;
 }
 // Checks if a string contains a specific char
