@@ -273,13 +273,6 @@ void runOtherCommands(char* buffer)
 int redirection(char* buffer)
 {
 
-	// TO DO LIST: 
-	// get the command
-	// run the command where the puts is
-	// filename.log
-	// make sure it doesnt append it truncates
-//	printf("%s", buffer);	
-
 	//remove the /n at the end
 	char * copyBuffer = strdup(buffer);
 	copyBuffer[strlen(copyBuffer) - 1] = '\0';
@@ -329,33 +322,16 @@ int redirection(char* buffer)
 			} else if(counter == 2)
 			{
 				printf("THE TOKEN IS AT TWO: %s\n", token);
-			//	if(strcmp(token, ">") == 0 )
-			//	{
-			//		printf("Failure, multiple arguments are not allowed\n");
-			//		return 1;
-			//	}
-		
+				strcpy(fileName, token);	
 			}
 		counter++;	
 		}
 	}	printf("THE END IS HERE\n");
 
-/* //		token = strtok(NULL, " ");
 	
-		if(token != NULL)
-		{	
-			printf("Too many arguements after >\n");
-		}
-//		printf("%s\n", command);
-	//	printf("%s\n", keepMoving);
-//		printf("%s\n", fileName);
-			
-	} else // shouldnt be null because that means there is no token after >
-	{
-		printf("Not a valid redirection call. i.e -> command > filename");
-		return 0;
-		
-	}	*/
+		printf("The command is: %s\n", command);
+		printf("The filename is: %s\n", fileName);	
+	
 /*	
 	int out = open("cout.log", O_RDWR|O_CREAT|O_APPEND, 0600);
 	if (-1 == out) { perror("opening cout.log"); return 255; }
@@ -387,39 +363,6 @@ int redirection(char* buffer)
 */
 
 
-
-/*	
-
-//	if (filename == NULL)
-//		return 1;
-	int pid, status;
-	int newFd; // new file descriptor
-	char *cmd[] = { "/bin/ls", NULL };
-	int other;
-	char * outFile = "testing.out";
-	if (newFd = open(outFile, O_CREAT|O_TRUNC|O_WRONLY, 0644) < 0)
-	{
-		printf("error");
-	}
-			
-	
-	int rc = fork();
-	if (rc < 0)
-	{
-		printf("Error Creating Process");		
-	} else if (rc == 0) // child
-	{
-		execvp(cmd[0], cmd);	
-	
-		dup2(newFd, STDOUT_FILENO); // newFd becomes standard output
-		close(newFd);
-	} else if (rc > 0) // parent
-	{
-		while(wait(&status) != -1); // pick up zombie children
-	}
-
-	return 0;
-*/
 }
 // Checks if a string contains a specific char
 // Parameters: A string
