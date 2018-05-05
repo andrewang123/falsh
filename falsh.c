@@ -371,45 +371,54 @@ int redirection(char* buffer)
 		perror("cannot redirect stderr"); 
 		return 255; 
 	}
-
-	// ALL THE CODE BELOW HERE UNTIL NEXT ALL CAPS WILL RUN THE COMMAND TO PRINT OUT
-
-	char* pathOfCommand = strdup(getenv("PATH")); // make a copy of your path
-	//printf("THE PATH OF COMMMAND IS: %s\n", pathOfCommand);
-	char* pathToken = strtok(pathOfCommand, ":");
-	if (pathToken != NULL)
+	if(strcmp(command, "help") == 0)
 	{	
-		while(pathToken != NULL)
-		{
-			// allocate memory on the heap
-			char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
-			// construct the full path of the executed program ex) /bin/ls
-			strcpy(finalPathOfExec, pathToken); // copy the token to the final path
-			strcat(finalPathOfExec, "/");
-			strcat(finalPathOfExec, command);// append the command to the final path
-			// create a child process
-			// returns a -1 if fork failed, 0 if on child process and 1 if on parent process
-			// when a child process is created it basically means that it is a copy of its parents
-			int rc = fork();
-			if (rc < 0)
+		printUserDescriptions();		
+	} else if(strcmp(command, "pwd") == 0)
+	{
+		char* cwd = getPWD();
+		printf("%s\n", cwd);
+		free(cwd); // free up the dynamically created memory
+	} else
+	{
+		// ALL THE CODE BELOW HERE UNTIL NEXT ALL CAPS WILL RUN THE COMMAND TO PRINT OUT
+
+		char* pathOfCommand = strdup(getenv("PATH")); // make a copy of your path
+		//printf("THE PATH OF COMMMAND IS: %s\n", pathOfCommand);
+		char* pathToken = strtok(pathOfCommand, ":");
+		if (pathToken != NULL)
+		{	
+			while(pathToken != NULL)
 			{
-				printf("An error occurred during fork.\n");
-			} else if (rc == 0)
-			{
-				//printf("final path of exec : %s\n", finalPathOfExec);
-				if(execl(finalPathOfExec, command, NULL) == -1) // cannot run
+				// allocate memory on the heap
+				char* finalPathOfExec = (char *)malloc(sizeof(char) * 255);
+				// construct the full path of the executed program ex) /bin/ls
+				strcpy(finalPathOfExec, pathToken); // copy the token to the final path
+				strcat(finalPathOfExec, "/");
+				strcat(finalPathOfExec, command);// append the command to the final path
+				// create a child process
+				// returns a -1 if fork failed, 0 if on child process and 1 if on parent process
+				// when a child process is created it basically means that it is a copy of its parents
+				int rc = fork();
+				if (rc < 0)
 				{
-					exit(0); // exit the child process
-				} 
-			} else // parent 
-			{ 	// if wait is successful than it returns the process if od the child
-				// if there is an error than -1 is returned
-				wait(NULL); // parent must wait for child process to finish
-			} 	
-			pathToken = strtok(NULL, ":"); // move onto the next directory (refer up for more details
+					printf("An error occurred during fork.\n");
+				} else if (rc == 0)
+				{
+					//printf("final path of exec : %s\n", finalPathOfExec);
+					if(execl(finalPathOfExec, command, NULL) == -1) // cannot run
+					{
+						exit(0); // exit the child process
+					} 
+				} else // parent 
+				{ 	// if wait is successful than it returns the process if od the child
+					// if there is an error than -1 is returned
+					wait(NULL); // parent must wait for child process to finish
+				} 	
+				pathToken = strtok(NULL, ":"); // move onto the next directory (refer up for more details
+			}
 		}
 	}
-
 	// END OF CODE THAT IS USED TO PRINT OUT THE COMMAND OUTPUT
 
 

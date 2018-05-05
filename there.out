@@ -1,0 +1,17 @@
+########################################################################
+	             FAlcon baSH aka falsh       
+LIST OF COMMANDS:
+exit - exits the program. 
+ Usage: exit
+
+pwd - print the current working directory.
+ Usage: pwd
+
+cd - changes the directory.
+ Usage: cd [dir] 
+If no arguments are specified than changes to home directory.
+If a directory is provided than it will change to that directory.
+Usage: cd [dir]
+setpath - overwrites the path with whatever arguements the user enters.
+Path should only contain /bin
+#######################################################################
