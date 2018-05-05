@@ -1,8 +1,12 @@
 // Andrew Ang
 // Lab 3 - The Falcon Shell
 // Professor Dingler
-// The purpose of this lab is to create our own shell
+// The purpose of this lab is to create our own linux like shell, it is to be similiar to bash
+// Built in commands include: exit, pwd, cd, setpath, help
+// The shell will also allow redirection with > and other command use if in path
+// More detailed descriptions is included in the readme and in the help function below
 
+// LIBRARIES
 #include <sys/wait.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,6 +17,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+// FUNCTION PROTOTYPES
 int redirection(char* buffer);
 void runOtherCommands(char* command);
 int contains(char* buffer, int ascii);
@@ -22,11 +27,14 @@ int changeDir(char* buffer);
 char* getPWD();
 void reprompt(char *buffer, size_t size);
 void printUserDescriptions();
+
 int main(int argc, char * argv[])
 {
 	// check if they are doing falsh -h
 	if (argc == 2)
 	{ 
+		// strcmp returns a 0 if it is the same string, less than 0 if str1 is < 2 and >0 if str1 > str2
+		// 1st parameter is the first string and 2nd parameter is the string to be compared
 		if (strcmp(argv[1], "-h") == 0) 
 		{
 			printIntro();
@@ -56,14 +64,26 @@ int main(int argc, char * argv[])
 		
 		reprompt(buffer, size);
 		char *setPathStr;
+		// strdup returns a pointer to a new string which is a duplicate of the parameter passed
+		// it is essentially a strcpy and a malloc built into one
 		// make a deep copy of the buffer, it is like strcpy but dynamically allocated memory
 		char *bufferCpy  = strdup(buffer);
+
+		// strlen is a function that take in a string and return the length of that string
+		// strchr searches for the first occurance of the character in the string
+		// strchr takes 2 params: 1st is the string to be scanned, 2nd is the char to be searched in the string
+		// strchr returns null if the character is not found
+		// check if the setpath is just setpath of there is other tokens with it
 		if (strlen(bufferCpy) > 7 && strchr(bufferCpy, ' ') != NULL)
 		{
+			
 			setPathStr = (char*)malloc(sizeof(char) * 255); // allocate dynamic memory	
 			// Searches for the first occurance of the 2nd parameter	
 			char* startOfSecond = strchr(bufferCpy, ' '); // first instance of a space
 			size_t lengthOfFirst = startOfSecond - bufferCpy; // the index of the first occurance of space
+			// strdup returns a pointer to a new string which is a duplicate of the parameter passed
+			// it is essentially a strcpy and a malloc built into one
+			// make a deep copy of the buffer, it is like strcpy but dynamically allocated memory
 			setPathStr = strndup(bufferCpy, lengthOfFirst);
 		}
 		if (strcmp(buffer, "exit\n") == 0) // exit the program
@@ -85,16 +105,12 @@ int main(int argc, char * argv[])
 			{
 				printf("No such file or directory\n");
 			} 
-		} else if(contains(buffer, '>') == 0) // go into redirection
+		} else if(contains(buffer, '>') == 0) // checks if there is a > in string
 		{	
 			int success = redirection(buffer);
-			//int num = contains(buffer, '>');
-			
-			//printf("This contains a redirection: %s\n", buffer);
-		//	close(1); // close the output
-		
-		} else if (setPathStr != NULL && strchr(buffer, ' ') != NULL) // if it is setpath with a space
-		{
+		} else if (setPathStr != NULL && strchr(buffer, ' ') != NULL) 
+		{	// if it is setpath with a space
+	
 			if (strcmp(setPathStr, "setpath") == 0)	
 			{
 				int success = setPath(buffer);
@@ -110,10 +126,8 @@ int main(int argc, char * argv[])
 			else 
 			{
 				runOtherCommands(buffer); // run for one "argc"
-				//printf("command not found.\n");		
 			}
 		}
-//		free(setPathStr); // deallocate memory
 		free(bufferCpy); // deallocate memory
 	}
 	free(buffer); // deallocate memory
